@@ -1,0 +1,94 @@
+import { Flame, Zap, Trophy, Swords } from 'lucide-react';
+import { StatPill } from '@/components/StatPill';
+import { LevelCard } from '@/components/LevelCard';
+import { levels } from '@/data/levels';
+import { allVerbs } from '@/data/verbs';
+import type { LevelId } from '@/types';
+
+/**
+ * Écran d'accueil (placeholder runnable).
+ *
+ * Les valeurs de progression (XP, flamme, verbes maîtrisés) sont figées à 0
+ * pour l'instant : elles seront branchées sur le store `UserProfile` à
+ * l'étape suivante. L'objectif ici est de valider l'architecture, le thème
+ * et le rendu mobile.
+ */
+export function HomeScreen() {
+  const verbCountByLevel = (id: LevelId) =>
+    allVerbs.filter((verb) => verb.levelId === id).length;
+
+  const handleLevelClick = (id: LevelId) => {
+    // Branché à l'étape « écrans de jeu ».
+    // eslint-disable-next-line no-console
+    console.info(`Ouverture du niveau : ${id} (à implémenter à l'étape suivante).`);
+  };
+
+  return (
+    <div className="mx-auto flex min-h-full w-full max-w-md flex-col px-4 pb-28 pt-6">
+      {/* En-tête : stats de gamification */}
+      <header className="mb-6 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-b from-brand-500 to-[#8b5cf6] shadow-lg">
+            <Zap size={22} className="text-white" fill="white" />
+          </div>
+          <div className="leading-tight">
+            <div className="text-base font-black tracking-tight text-white">Verbes Héros</div>
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+              Irréguliers anglais
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <StatPill icon={Flame} value={0} label="Flamme" color="#f97316" />
+          <StatPill icon={Trophy} value={0} label="XP" color="#facc15" />
+        </div>
+      </header>
+
+      {/* Bannière Boss Rush */}
+      <section className="mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-brand-600 to-[#7c3aed] p-5 shadow-xl ring-1 ring-white/10">
+        <div className="flex items-center gap-3">
+          <Swords size={28} className="text-white" />
+          <div className="flex-1">
+            <h2 className="text-lg font-black text-white">Boss Rush</h2>
+            <p className="text-xs text-brand-100">
+              60 secondes pour vaincre le boss. Enchaîne les bonnes réponses&nbsp;!
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          className="mt-4 w-full rounded-2xl bg-white/95 py-3 text-sm font-black text-brand-700 shadow-md transition-transform active:scale-[0.98]"
+        >
+          Lancer un défi
+        </button>
+      </section>
+
+      {/* Parcours de niveaux */}
+      <section className="flex flex-col gap-3">
+        <h2 className="px-1 text-sm font-black uppercase tracking-wider text-slate-400">
+          Parcours
+        </h2>
+        {levels.map((level) => {
+          const count = verbCountByLevel(level.id);
+          const locked = level.order > 1; // seul le niveau 1 a du contenu pour l'instant
+          return (
+            <LevelCard
+              key={level.id}
+              level={level}
+              verbCount={count}
+              masteredCount={0}
+              locked={locked || count === 0}
+              onClick={() => handleLevelClick(level.id)}
+            />
+          );
+        })}
+      </section>
+
+      <p className="mt-8 text-center text-[11px] leading-relaxed text-slate-500">
+        Étape 1 — squelette du projet.
+        <br />
+        Le suivi de progression et les modes de jeu arrivent à l'étape&nbsp;2.
+      </p>
+    </div>
+  );
+}
