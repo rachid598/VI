@@ -55,7 +55,7 @@ export function SessionSummary({
           onClick={onReplay}
           className="flex items-center justify-center gap-2 rounded-2xl bg-brand-500 py-3.5 text-sm font-black text-white shadow-lg transition-transform active:scale-[0.98]"
         >
-          <RotateCcw size={18} /> Rejouer ce niveau
+          <RotateCcw size={18} /> Rejouer
         </button>
         <button
           type="button"

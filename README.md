@@ -65,7 +65,7 @@ verbes-irreguliers/
     ├── types/
     │   └── index.ts           # ✅ Verb, UserProfile, Level, session, badges…
     ├── data/
-    │   ├── verbs.ts           # ✅ contenu : 72 verbes (5 niveaux)
+    │   ├── verbs.ts           # ✅ contenu : 100 verbes (5 niveaux)
     │   ├── levels.ts          # métadonnées des niveaux
     │   └── badges.ts          # catalogue des badges
     ├── lib/                   # ✅ logique métier PURE (testée)
@@ -103,7 +103,8 @@ fonctions **pures** (sans effet de bord), donc facile à tester et à faire évo
 - [x] **Étape 3** — Écran d'entraînement (feedback vert/rouge, correction, phonétique, audio).
 - [x] **Étape 4** — Mode Boss Rush (chrono 60 s, barre de vie, combos).
 - [x] **Étape 5** — XP, flammes (streak), badges et écran de collection + réglages.
-- [x] **Étape 6** — Contenu des 5 niveaux : 72 verbes (indispensables, invariables, changeants, jumeaux, pièges).
+- [x] **Étape 6** — Contenu des 5 niveaux : **100 verbes** (indispensables, invariables, changeants, jumeaux, pièges).
+- [x] **Bonus** — Tous les niveaux accessibles d'emblée + mode **Révision mélangée** (pioche dans tous les niveaux).
 
 > **Tous les niveaux sont accessibles d'emblée** (l'enseignant choisit sur
 > quoi travailler). Pour ajouter d'autres verbes, il suffit de compléter

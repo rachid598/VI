@@ -20,38 +20,53 @@ function nextLevelWithContent(levelId: LevelId): LevelId | undefined {
     .sort((a, b) => a.order - b.order)[0]?.id;
 }
 
+/** Nombre de verbes tirés en mode « révision mélangée ». */
+const REVISION_SIZE = 15;
+
 interface TrainingScreenProps {
-  levelId: LevelId;
+  source: LevelId | 'revision';
 }
 
-export function TrainingScreen({ levelId }: TrainingScreenProps) {
+export function TrainingScreen({ source }: TrainingScreenProps) {
   const { profile, answer, completeLevel } = useProfile();
   const { navigate } = useNav();
 
-  const levelVerbs = useMemo(() => allVerbs.filter((v) => v.levelId === levelId), [levelId]);
-  const levelTitle = levelsById[levelId]?.title ?? 'Entraînement';
+  const isRevision = source === 'revision';
+  const sessionVerbs = useMemo(
+    () => (isRevision ? allVerbs : allVerbs.filter((v) => v.levelId === source)),
+    [isRevision, source],
+  );
+  const title = isRevision ? 'Révision mélangée' : (levelsById[source]?.title ?? 'Entraînement');
+
+  const buildSession = () =>
+    createSession(source, sessionVerbs, {
+      prompted: 'both',
+      progress: profile.progress,
+      shuffle: isRevision,
+      ...(isRevision ? { size: REVISION_SIZE } : {}),
+    });
 
   const startXpRef = useRef(profile.xp);
   const finalizedRef = useRef(false);
   const nextSessionRef = useRef<TrainingSession | null>(null);
   const continueBtnRef = useRef<HTMLButtonElement>(null);
 
-  const [session, setSession] = useState<TrainingSession>(() =>
-    createSession(levelId, levelVerbs, { prompted: 'both', progress: profile.progress }),
-  );
+  const [session, setSession] = useState<TrainingSession>(buildSession);
   const [preterite, setPreterite] = useState('');
   const [pastParticiple, setPastParticiple] = useState('');
   const [graded, setGraded] = useState<GradedAnswer | null>(null);
 
   const question = currentQuestion(session);
 
-  // Finalise le niveau une seule fois (bonus « sans-faute » + déblocage).
+  // À la fin : bonus « sans-faute » + déblocage (uniquement pour un vrai niveau).
   useEffect(() => {
     if (session.finished && !finalizedRef.current) {
       finalizedRef.current = true;
-      completeLevel(session.perfect, nextLevelWithContent(levelId));
+      if (source !== 'revision') {
+        completeLevel(session.perfect, nextLevelWithContent(source));
+      }
     }
-  }, [session.finished, session.perfect, levelId, completeLevel]);
+  }, [session.finished, session.perfect, source, completeLevel]);
 
   // Quand la correction s'affiche, on met le focus sur « Continuer » (Entrée).
   useEffect(() => {
@@ -62,7 +77,7 @@ export function TrainingScreen({ levelId }: TrainingScreenProps) {
     startXpRef.current = profile.xp;
     finalizedRef.current = false;
     nextSessionRef.current = null;
-    setSession(createSession(levelId, levelVerbs, { prompted: 'both', progress: profile.progress }));
+    setSession(buildSession());
     setGraded(null);
     setPreterite('');
     setPastParticiple('');
@@ -95,7 +110,7 @@ export function TrainingScreen({ levelId }: TrainingScreenProps) {
         correct={session.correctCount}
         total={session.answeredCount}
         xpGained={Math.max(0, profile.xp - startXpRef.current)}
-        levelTitle={levelTitle}
+        levelTitle={title}
         onReplay={restart}
         onHome={() => navigate({ name: 'home' })}
       />

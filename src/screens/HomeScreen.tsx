@@ -1,4 +1,4 @@
-import { Flame, Zap, Trophy, Swords } from 'lucide-react';
+import { Flame, Zap, Trophy, Swords, Shuffle, ChevronRight } from 'lucide-react';
 import { StatPill } from '@/components/StatPill';
 import { LevelCard } from '@/components/LevelCard';
 import { levels } from '@/data/levels';
@@ -59,6 +59,22 @@ export function HomeScreen() {
         </button>
       </section>
 
+      {/* Révision mélangée : pioche dans tous les niveaux */}
+      <button
+        type="button"
+        onClick={() => navigate({ name: 'training', source: 'revision' })}
+        className="mb-6 flex w-full items-center gap-3 rounded-3xl bg-white/5 p-4 text-left ring-1 ring-white/10 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/10"
+      >
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/15">
+          <Shuffle size={22} className="text-emerald-300" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h3 className="text-base font-extrabold text-white">Révision mélangée</h3>
+          <p className="truncate text-xs text-slate-400">Un mix de verbes de tous les niveaux.</p>
+        </div>
+        <ChevronRight size={22} className="shrink-0 text-slate-500" />
+      </button>
+
       {/* Parcours de niveaux */}
       <section className="flex flex-col gap-3">
         <h2 className="px-1 text-sm font-black uppercase tracking-wider text-slate-400">Parcours</h2>
@@ -72,7 +88,7 @@ export function HomeScreen() {
               verbCount={count}
               masteredCount={masteredCountForLevel(profile, allVerbs, level.id)}
               locked={count === 0}
-              onClick={() => navigate({ name: 'training', levelId: level.id })}
+              onClick={() => navigate({ name: 'training', source: level.id })}
             />
           );
         })}

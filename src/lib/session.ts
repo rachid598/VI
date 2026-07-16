@@ -22,21 +22,38 @@ interface CreateSessionOptions {
   size?: number;
   prompted?: PromptedForm;
   progress?: Record<string, VerbProgress>;
+  /** Ordre aléatoire (mode « révision mélangée ») plutôt que par fréquence. */
+  shuffle?: boolean;
+}
+
+function shuffleArray<T>(arr: T[]): T[] {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = a[i]!;
+    a[i] = a[j]!;
+    a[j] = tmp;
+  }
+  return a;
 }
 
 /**
  * Sélectionne les verbes d'une session : ceux « dus » d'abord (répétition
- * espacée), puis les autres, chacun trié par fréquence d'usage.
+ * espacée), puis les autres — triés par fréquence, ou mélangés si `random`.
  */
 export function selectVerbs(
   verbs: Verb[],
   progress: Record<string, VerbProgress>,
   now: number,
   size: number,
+  random = false,
 ): Verb[] {
-  const byFreq = (a: Verb, b: Verb) => (a.frequencyRank ?? 999) - (b.frequencyRank ?? 999);
-  const due = verbs.filter((v) => isDue(progress[v.id], now)).sort(byFreq);
-  const rest = verbs.filter((v) => !isDue(progress[v.id], now)).sort(byFreq);
+  const order = (list: Verb[]) =>
+    random
+      ? shuffleArray(list)
+      : list.slice().sort((a, b) => (a.frequencyRank ?? 999) - (b.frequencyRank ?? 999));
+  const due = order(verbs.filter((v) => isDue(progress[v.id], now)));
+  const rest = order(verbs.filter((v) => !isDue(progress[v.id], now)));
   return [...due, ...rest].slice(0, size);
 }
 
@@ -46,8 +63,14 @@ export function createSession(
   verbs: Verb[],
   options: CreateSessionOptions = {},
 ): TrainingSession {
-  const { now = Date.now(), size = verbs.length, prompted = 'both', progress = {} } = options;
-  const chosen = selectVerbs(verbs, progress, now, size);
+  const {
+    now = Date.now(),
+    size = verbs.length,
+    prompted = 'both',
+    progress = {},
+    shuffle = false,
+  } = options;
+  const chosen = selectVerbs(verbs, progress, now, size, shuffle);
   const queue: Question[] = chosen.map((verb) => ({ verb, prompted }));
   return {
     source,

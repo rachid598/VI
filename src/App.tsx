@@ -17,7 +17,7 @@ export default function App() {
   return (
     <div className={`min-h-full ${profile.settings.reduceMotion ? 'reduce-motion' : ''}`}>
       {route.name === 'home' && <HomeScreen />}
-      {route.name === 'training' && <TrainingScreen levelId={route.levelId} />}
+      {route.name === 'training' && <TrainingScreen source={route.source} />}
       {route.name === 'boss' && <BossRushScreen />}
       {route.name === 'badges' && <BadgesScreen />}
       {route.name === 'settings' && <SettingsScreen />}

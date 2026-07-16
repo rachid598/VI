@@ -4,7 +4,7 @@ import type { LevelId } from '@/types';
 /** Navigation simple entre écrans (pas de router externe pour une PWA légère). */
 export type Route =
   | { name: 'home' }
-  | { name: 'training'; levelId: LevelId }
+  | { name: 'training'; source: LevelId | 'revision' }
   | { name: 'boss' }
   | { name: 'badges' }
   | { name: 'settings' };
