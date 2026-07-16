@@ -55,8 +55,10 @@ export function createSession(
     position: 0,
     answeredCount: 0,
     correctCount: 0,
+    cleared: [],
+    totalUnique: chosen.length,
     perfect: true,
-    finished: queue.length === 0,
+    finished: chosen.length === 0,
   };
 }
 
@@ -81,23 +83,29 @@ export function submitAnswer(
   const graded = gradeAnswer(question, answer);
   const queue = session.queue.slice();
   let perfect = session.perfect;
+  let cleared = session.cleared;
 
-  if (!graded.correct) {
+  if (graded.correct) {
+    // Verbe réussi : il compte pour la progression (une seule fois).
+    if (!cleared.includes(question.verb.id)) cleared = [...cleared, question.verb.id];
+  } else {
+    // Verbe raté : réapparaît un peu plus loin et casse le « sans-faute ».
     perfect = false;
     const insertAt = Math.min(session.position + 1 + SESSION_REQUEUE_GAP, queue.length);
     queue.splice(insertAt, 0, question);
   }
 
-  const position = session.position + 1;
   return {
     session: {
       ...session,
       queue,
-      position,
+      position: session.position + 1,
       answeredCount: session.answeredCount + 1,
       correctCount: session.correctCount + (graded.correct ? 1 : 0),
+      cleared,
       perfect,
-      finished: position >= queue.length,
+      // La session se termine quand tous les verbes distincts sont réussis.
+      finished: cleared.length >= session.totalUnique,
     },
     graded,
   };

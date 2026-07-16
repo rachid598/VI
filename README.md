@@ -105,6 +105,6 @@ fonctions **pures** (sans effet de bord), donc facile à tester et à faire évo
 - [x] **Étape 5** — XP, flammes (streak), badges et écran de collection + réglages.
 - [x] **Étape 6** — Contenu des 5 niveaux : 72 verbes (indispensables, invariables, changeants, jumeaux, pièges).
 
-> Les niveaux se **débloquent progressivement** : terminer un niveau ouvre le
-> suivant. Pour ajouter d'autres verbes, il suffit de compléter
+> **Tous les niveaux sont accessibles d'emblée** (l'enseignant choisit sur
+> quoi travailler). Pour ajouter d'autres verbes, il suffit de compléter
 > `src/data/verbs.ts` — la mécanique de jeu s'applique automatiquement.

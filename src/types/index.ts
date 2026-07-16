@@ -230,6 +230,10 @@ export interface TrainingSession {
   position: number;
   answeredCount: number;
   correctCount: number;
+  /** ids des verbes réussis au moins une fois (= progression réelle). */
+  cleared: string[];
+  /** Nombre de verbes distincts à réussir pour terminer la session. */
+  totalUnique: number;
   /** true tant qu'aucune faute n'a été commise (badge « Infaillible »). */
   perfect: boolean;
   finished: boolean;

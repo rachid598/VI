@@ -64,14 +64,14 @@ export function HomeScreen() {
         <h2 className="px-1 text-sm font-black uppercase tracking-wider text-slate-400">Parcours</h2>
         {levels.map((level) => {
           const count = verbCountByLevel(level.id);
-          const unlocked = profile.unlockedLevels.includes(level.id) && count > 0;
+          // Tous les niveaux disposant de verbes sont accessibles directement.
           return (
             <LevelCard
               key={level.id}
               level={level}
               verbCount={count}
               masteredCount={masteredCountForLevel(profile, allVerbs, level.id)}
-              locked={!unlocked}
+              locked={count === 0}
               onClick={() => navigate({ name: 'training', levelId: level.id })}
             />
           );

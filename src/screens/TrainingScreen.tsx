@@ -109,7 +109,7 @@ export function TrainingScreen({ levelId }: TrainingScreenProps) {
     if (!graded) return 'idle';
     return graded.forms.find((f) => f.form === form)?.correct ? 'correct' : 'wrong';
   };
-  const progress = session.queue.length > 0 ? (session.position / session.queue.length) * 100 : 0;
+  const progress = session.totalUnique > 0 ? (session.cleared.length / session.totalUnique) * 100 : 0;
 
   return (
     <div className="mx-auto flex min-h-full w-full max-w-md flex-col px-4 pb-8 pt-6">
@@ -124,8 +124,8 @@ export function TrainingScreen({ levelId }: TrainingScreenProps) {
           <X size={22} />
         </button>
         <ProgressBar value={progress} />
-        <span className="w-10 shrink-0 text-right text-xs font-black text-slate-400">
-          ✓ {session.correctCount}
+        <span className="w-12 shrink-0 text-right text-xs font-black text-slate-400">
+          {session.cleared.length}/{session.totalUnique}
         </span>
       </div>
 

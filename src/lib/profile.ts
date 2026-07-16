@@ -25,7 +25,8 @@ export function createDefaultProfile(now: number = Date.now()): UserProfile {
     xp: 0,
     streak: { current: 0, longest: 0, lastActiveDate: null },
     progress: {},
-    unlockedLevels: ['indispensables'],
+    // Tous les niveaux sont accessibles d'emblée (l'enseignant choisit).
+    unlockedLevels: ['indispensables', 'invariables', 'changeants', 'jumeaux', 'pieges'],
     badges: {
       infaillible: null,
       flash: null,

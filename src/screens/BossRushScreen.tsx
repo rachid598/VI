@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Check, Home, Swords, Timer, X, Zap } from 'lucide-react';
 import type { FormKey, Verb } from '@/types';
 import { allVerbs } from '@/data/verbs';
@@ -21,11 +21,8 @@ export function BossRushScreen() {
   const { profile, recordBossScore } = useProfile();
   const { navigate } = useNav();
 
-  // Verbes des niveaux débloqués
-  const pool = useMemo(
-    () => allVerbs.filter((v) => profile.unlockedLevels.includes(v.levelId)),
-    [profile.unlockedLevels],
-  );
+  // Tous les verbes disponibles (tous les niveaux sont accessibles).
+  const pool = allVerbs;
   const prevBestRef = useRef(profile.stats.bestBossScore);
   const finalizedRef = useRef(false);
   const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);

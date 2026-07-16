@@ -166,6 +166,25 @@ describe('session', () => {
     expect(session.finished).toBe(true);
     expect(session.perfect).toBe(true);
   });
+
+  it('se termine dès que tous les verbes sont réussis (même après des fautes)', () => {
+    let session = createSession('indispensables', [be, go], { size: 2, now: T0 });
+    expect(session.totalUnique).toBe(2);
+
+    // Faute sur « be » : réinséré, session pas finie, progression inchangée.
+    session = submitAnswer(session, { preterite: 'x', pastParticiple: 'y' }).session;
+    expect(session.finished).toBe(false);
+    expect(session.cleared).toHaveLength(0);
+
+    // « go » réussi, puis « be » réussi -> tous les verbes distincts sont clairs.
+    session = submitAnswer(session, { preterite: 'went', pastParticiple: 'gone' }).session;
+    session = submitAnswer(session, { preterite: 'was', pastParticiple: 'been' }).session;
+
+    expect(session.cleared.sort()).toEqual(['to-be', 'to-go']);
+    expect(session.finished).toBe(true);
+    expect(session.perfect).toBe(false);
+    expect(session.answeredCount).toBe(3);
+  });
 });
 
 /* -------------------------------------------------------------------------- */
