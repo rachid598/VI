@@ -3,29 +3,28 @@ import { StatPill } from '@/components/StatPill';
 import { LevelCard } from '@/components/LevelCard';
 import { levels } from '@/data/levels';
 import { allVerbs } from '@/data/verbs';
+import { useProfile } from '@/store/profile';
+import { masteredCountForLevel, studentLevel } from '@/lib/profile';
 import type { LevelId } from '@/types';
 
 /**
- * Écran d'accueil (placeholder runnable).
- *
- * Les valeurs de progression (XP, flamme, verbes maîtrisés) sont figées à 0
- * pour l'instant : elles seront branchées sur le store `UserProfile` à
- * l'étape suivante. L'objectif ici est de valider l'architecture, le thème
- * et le rendu mobile.
+ * Écran d'accueil, branché sur l'état réel (`useProfile`).
+ * Les valeurs (XP, flamme, verbes maîtrisés) proviennent du profil persisté.
+ * Le clic sur un niveau ouvrira l'écran d'entraînement à l'étape 3.
  */
 export function HomeScreen() {
-  const verbCountByLevel = (id: LevelId) =>
-    allVerbs.filter((verb) => verb.levelId === id).length;
+  const { profile } = useProfile();
+
+  const verbCountByLevel = (id: LevelId) => allVerbs.filter((verb) => verb.levelId === id).length;
 
   const handleLevelClick = (id: LevelId) => {
-    // Branché à l'étape « écrans de jeu ».
-    // eslint-disable-next-line no-console
-    console.info(`Ouverture du niveau : ${id} (à implémenter à l'étape suivante).`);
+    // Branché à l'étape « écran d'entraînement ».
+    console.info(`Ouverture du niveau : ${id} (écran de jeu à venir à l'étape 3).`);
   };
 
   return (
     <div className="mx-auto flex min-h-full w-full max-w-md flex-col px-4 pb-28 pt-6">
-      {/* En-tête : stats de gamification */}
+      {/* En-tête : stats de gamification (données réelles) */}
       <header className="mb-6 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-b from-brand-500 to-[#8b5cf6] shadow-lg">
@@ -34,13 +33,13 @@ export function HomeScreen() {
           <div className="leading-tight">
             <div className="text-base font-black tracking-tight text-white">Verbes Héros</div>
             <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-              Irréguliers anglais
+              Niveau {studentLevel(profile.xp)}
             </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <StatPill icon={Flame} value={0} label="Flamme" color="#f97316" />
-          <StatPill icon={Trophy} value={0} label="XP" color="#facc15" />
+          <StatPill icon={Flame} value={profile.streak.current} label="Flamme" color="#f97316" />
+          <StatPill icon={Trophy} value={profile.xp} label="XP" color="#facc15" />
         </div>
       </header>
 
@@ -65,19 +64,17 @@ export function HomeScreen() {
 
       {/* Parcours de niveaux */}
       <section className="flex flex-col gap-3">
-        <h2 className="px-1 text-sm font-black uppercase tracking-wider text-slate-400">
-          Parcours
-        </h2>
+        <h2 className="px-1 text-sm font-black uppercase tracking-wider text-slate-400">Parcours</h2>
         {levels.map((level) => {
           const count = verbCountByLevel(level.id);
-          const locked = level.order > 1; // seul le niveau 1 a du contenu pour l'instant
+          const unlocked = profile.unlockedLevels.includes(level.id) && count > 0;
           return (
             <LevelCard
               key={level.id}
               level={level}
               verbCount={count}
-              masteredCount={0}
-              locked={locked || count === 0}
+              masteredCount={masteredCountForLevel(profile, allVerbs, level.id)}
+              locked={!unlocked}
               onClick={() => handleLevelClick(level.id)}
             />
           );
@@ -85,9 +82,9 @@ export function HomeScreen() {
       </section>
 
       <p className="mt-8 text-center text-[11px] leading-relaxed text-slate-500">
-        Étape 1 — squelette du projet.
+        Étape 2 — store d'état + répétition espacée.
         <br />
-        Le suivi de progression et les modes de jeu arrivent à l'étape&nbsp;2.
+        L'écran d'entraînement (le jeu) arrive à l'étape&nbsp;3.
       </p>
     </div>
   );

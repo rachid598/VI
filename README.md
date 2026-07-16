@@ -63,27 +63,35 @@ verbes-irreguliers/
     ├── App.tsx                # routeur d'écrans (minimal pour l'instant)
     ├── index.css              # thème Tailwind (@theme) + styles de base
     ├── types/
-    │   └── index.ts           # ✅ Verb, UserProfile, Level, badges…
+    │   └── index.ts           # ✅ Verb, UserProfile, Level, session, badges…
     ├── data/
     │   ├── verbs.ts           # ✅ contenu (Niveau 1 : 15 verbes)
-    │   └── levels.ts          # métadonnées des niveaux
+    │   ├── levels.ts          # métadonnées des niveaux
+    │   └── badges.ts          # catalogue des badges
+    ├── lib/                   # ✅ logique métier PURE (testée)
+    │   ├── constants.ts       # constantes de jeu réglables
+    │   ├── srs.ts             # répétition espacée (Leitner)
+    │   ├── grading.ts         # correction des réponses
+    │   ├── profile.ts         # XP, streak, badges, mutations du profil
+    │   ├── session.ts         # moteur d'une session d'entraînement
+    │   ├── storage.ts         # persistance LocalStorage (+ migrations)
+    │   └── engine.test.ts     # tests Vitest du moteur
+    ├── store/
+    │   └── profile.tsx        # ✅ contexte React + persistance + useProfile()
     ├── components/            # briques UI réutilisables
     │   ├── StatPill.tsx
     │   └── LevelCard.tsx
-    ├── screens/               # écrans complets
-    │   └── HomeScreen.tsx
-    ├── store/                 # (étape 2) état + LocalStorage
-    ├── lib/                   # (étape 2) moteur SRS, correction, audio
-    └── hooks/                 # (étape 2) hooks React
+    └── screens/               # écrans complets
+        └── HomeScreen.tsx
 ```
 
-Les dossiers `store/`, `lib/` et `hooks/` seront créés aux étapes suivantes
-(gestion d'état, répétition espacée, correction des réponses, synthèse vocale).
+Tests du moteur : `npm test` (Vitest). La couche `lib/` est composée de
+fonctions **pures** (sans effet de bord), donc facile à tester et à faire évoluer.
 
 ## 🗺️ Feuille de route
 
 - [x] **Étape 1** — Squelette Vite/React/Tailwind/PWA + types + données (N1).
-- [ ] **Étape 2** — Store `UserProfile` (LocalStorage) + moteur de répétition espacée.
+- [x] **Étape 2** — Store `UserProfile` (LocalStorage) + moteur de répétition espacée (+ tests).
 - [ ] **Étape 3** — Écran d'entraînement (feedback vert/rouge, correction, phonétique).
 - [ ] **Étape 4** — Mode Boss Rush (chrono 60 s, barre de vie).
 - [ ] **Étape 5** — XP, flammes (streak), badges et écran de collection.

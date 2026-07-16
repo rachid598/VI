@@ -184,8 +184,11 @@ export interface UserProfile {
  * 3. TYPES DE SESSION DE JEU (transitoires, non persistés)
  * ========================================================================== */
 
-/** Quelle forme du verbe l'élève doit-il produire dans la question ? */
-export type PromptedForm = 'preterite' | 'pastParticiple' | 'both';
+/** Les deux formes qu'un élève peut avoir à produire. */
+export type FormKey = 'preterite' | 'pastParticiple';
+
+/** Quelle(s) forme(s) le verbe demande-t-il dans la question ? */
+export type PromptedForm = FormKey | 'both';
 
 /** Une question posée pendant un entraînement ou un Boss Rush. */
 export interface Question {
@@ -193,11 +196,41 @@ export interface Question {
   prompted: PromptedForm;
 }
 
-/** Résultat de la correction d'une réponse. */
-export interface AnswerResult {
-  correct: boolean;
-  /** Réponse saisie par l'élève (normalisée). */
+/** Réponse saisie par l'élève (une ou deux formes selon la question). */
+export interface FormAnswer {
+  preterite?: string;
+  pastParticiple?: string;
+}
+
+/** Correction d'une forme précise. */
+export interface GradedForm {
+  form: FormKey;
   given: string;
-  /** Réponse(s) attendue(s) pour l'affichage de la correction. */
   expected: string;
+  correct: boolean;
+}
+
+/** Résultat complet de la correction d'une réponse. */
+export interface GradedAnswer {
+  verbId: string;
+  /** true seulement si TOUTES les formes demandées sont justes. */
+  correct: boolean;
+  forms: GradedForm[];
+}
+
+/**
+ * État transitoire d'une session d'entraînement.
+ * La file `queue` peut grandir : un verbe raté y est réinséré plus loin
+ * pour réapparaître rapidement.
+ */
+export interface TrainingSession {
+  source: LevelId | 'revision';
+  queue: Question[];
+  /** Index de la question courante dans `queue`. */
+  position: number;
+  answeredCount: number;
+  correctCount: number;
+  /** true tant qu'aucune faute n'a été commise (badge « Infaillible »). */
+  perfect: boolean;
+  finished: boolean;
 }
