@@ -1,0 +1,4 @@
+# Cloudflare Pages — fallback SPA : toute URL inconnue renvoie index.html.
+# Les fichiers réellement présents (assets, manifest, icônes) sont servis
+# directement ; cette règle ne s'applique qu'aux routes côté client.
+/*    /index.html    200

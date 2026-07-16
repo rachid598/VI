@@ -27,6 +27,24 @@ npm run preview    # prévisualise le build (teste la PWA / offline)
 npm run icons      # régénère les icônes PWA (nécessite Python + Pillow)
 ```
 
+## ☁️ Déploiement (Cloudflare Pages)
+
+⚠️ **Écran blanc = mauvais réglage de build.** Cloudflare doit servir le dossier
+`dist/` généré, **pas** la racine du dépôt (qui contient un `index.html` de
+développement pointant vers `/src/main.tsx`, non exécutable par le navigateur).
+
+Dans **Cloudflare Pages → ton projet → Settings → Builds & deployments** :
+
+| Réglage                     | Valeur          |
+| --------------------------- | --------------- |
+| Framework preset            | `Vite`          |
+| Build command               | `npm run build` |
+| Build output directory      | `dist`          |
+| Variable d'env. `NODE_VERSION` | `22` (ou via `.nvmrc`) |
+
+Puis **Retry deployment / Redeploy**. En upload direct (`wrangler`), pousse le
+dossier `dist` : `npm run build && npx wrangler pages deploy dist`.
+
 ## 📁 Architecture des dossiers
 
 ```
