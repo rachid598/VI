@@ -4,23 +4,19 @@ import { LevelCard } from '@/components/LevelCard';
 import { levels } from '@/data/levels';
 import { allVerbs } from '@/data/verbs';
 import { useProfile } from '@/store/profile';
+import { useNav } from '@/store/navigation';
 import { masteredCountForLevel, studentLevel } from '@/lib/profile';
 import type { LevelId } from '@/types';
 
 /**
  * Écran d'accueil, branché sur l'état réel (`useProfile`).
  * Les valeurs (XP, flamme, verbes maîtrisés) proviennent du profil persisté.
- * Le clic sur un niveau ouvrira l'écran d'entraînement à l'étape 3.
  */
 export function HomeScreen() {
   const { profile } = useProfile();
+  const { navigate } = useNav();
 
   const verbCountByLevel = (id: LevelId) => allVerbs.filter((verb) => verb.levelId === id).length;
-
-  const handleLevelClick = (id: LevelId) => {
-    // Branché à l'étape « écran d'entraînement ».
-    console.info(`Ouverture du niveau : ${id} (écran de jeu à venir à l'étape 3).`);
-  };
 
   return (
     <div className="mx-auto flex min-h-full w-full max-w-md flex-col px-4 pb-28 pt-6">
@@ -56,6 +52,7 @@ export function HomeScreen() {
         </div>
         <button
           type="button"
+          onClick={() => navigate({ name: 'boss' })}
           className="mt-4 w-full rounded-2xl bg-white/95 py-3 text-sm font-black text-brand-700 shadow-md transition-transform active:scale-[0.98]"
         >
           Lancer un défi
@@ -75,16 +72,14 @@ export function HomeScreen() {
               verbCount={count}
               masteredCount={masteredCountForLevel(profile, allVerbs, level.id)}
               locked={!unlocked}
-              onClick={() => handleLevelClick(level.id)}
+              onClick={() => navigate({ name: 'training', levelId: level.id })}
             />
           );
         })}
       </section>
 
       <p className="mt-8 text-center text-[11px] leading-relaxed text-slate-500">
-        Étape 2 — store d'état + répétition espacée.
-        <br />
-        L'écran d'entraînement (le jeu) arrive à l'étape&nbsp;3.
+        Un peu chaque jour et les verbes irréguliers n'auront plus de secrets&nbsp;! 💪
       </p>
     </div>
   );

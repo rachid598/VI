@@ -29,7 +29,12 @@ export const REVIEW_INTERVALS_MS: readonly number[] = [
 export const XP_PER_CORRECT = 10;
 export const XP_MASTERY_BONUS = 25;
 export const XP_PERFECT_LEVEL_BONUS = 50;
+export const XP_PER_BOSS_HIT = 5; // XP par coup porté au boss
 export const XP_PER_LEVEL = 100; // pour dériver le « niveau élève »
+
+/** Réglages du mode Boss Rush. */
+export const BOSS_DURATION_SEC = 60;
+export const BOSS_MAX_HP = 12; // coups pour vaincre le 1er boss
 
 /** Un verbe raté est réinséré N positions plus loin dans la session. */
 export const SESSION_REQUEUE_GAP = 3;

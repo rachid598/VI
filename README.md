@@ -75,14 +75,22 @@ verbes-irreguliers/
     │   ├── profile.ts         # XP, streak, badges, mutations du profil
     │   ├── session.ts         # moteur d'une session d'entraînement
     │   ├── storage.ts         # persistance LocalStorage (+ migrations)
+    │   ├── speech.ts          # synthèse vocale (prononciation, offline)
     │   └── engine.test.ts     # tests Vitest du moteur
     ├── store/
-    │   └── profile.tsx        # ✅ contexte React + persistance + useProfile()
+    │   ├── profile.tsx        # contexte profil + persistance + useProfile()
+    │   └── navigation.tsx     # navigation entre écrans + useNav()
     ├── components/            # briques UI réutilisables
-    │   ├── StatPill.tsx
-    │   └── LevelCard.tsx
+    │   ├── StatPill.tsx  LevelCard.tsx  ProgressBar.tsx
+    │   ├── FormField.tsx  FeedbackCard.tsx  BadgeTile.tsx
+    │   └── BossHealthBar.tsx  BottomNav.tsx
     └── screens/               # écrans complets
-        └── HomeScreen.tsx
+        ├── HomeScreen.tsx       # parcours + accès Boss Rush
+        ├── TrainingScreen.tsx   # entraînement (2 formes, feedback, audio)
+        ├── SessionSummary.tsx   # récap de fin de session
+        ├── BossRushScreen.tsx   # défi chronométré 60 s
+        ├── BadgesScreen.tsx     # récompenses & badges
+        └── SettingsScreen.tsx   # réglages (audio, phonétique, reset)
 ```
 
 Tests du moteur : `npm test` (Vitest). La couche `lib/` est composée de
@@ -92,7 +100,11 @@ fonctions **pures** (sans effet de bord), donc facile à tester et à faire évo
 
 - [x] **Étape 1** — Squelette Vite/React/Tailwind/PWA + types + données (N1).
 - [x] **Étape 2** — Store `UserProfile` (LocalStorage) + moteur de répétition espacée (+ tests).
-- [ ] **Étape 3** — Écran d'entraînement (feedback vert/rouge, correction, phonétique).
-- [ ] **Étape 4** — Mode Boss Rush (chrono 60 s, barre de vie).
-- [ ] **Étape 5** — XP, flammes (streak), badges et écran de collection.
-- [ ] **Étape 6** — Niveaux 2 à 5 (invariables, changeants, jumeaux, pièges).
+- [x] **Étape 3** — Écran d'entraînement (feedback vert/rouge, correction, phonétique, audio).
+- [x] **Étape 4** — Mode Boss Rush (chrono 60 s, barre de vie, combos).
+- [x] **Étape 5** — XP, flammes (streak), badges et écran de collection + réglages.
+- [ ] **Étape 6** — Contenu des niveaux 2 à 5 (invariables, changeants, jumeaux, pièges).
+
+> Il ne reste plus qu'à **enrichir le contenu** (verbes des niveaux 2 à 5 dans
+> `src/data/verbs.ts`) : toute la mécanique de jeu est en place et les
+> nouveaux niveaux se débloqueront automatiquement.

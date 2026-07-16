@@ -4,6 +4,7 @@ import {
   BADGE_THRESHOLDS,
   DAY,
   XP_MASTERY_BONUS,
+  XP_PER_BOSS_HIT,
   XP_PER_CORRECT,
   XP_PER_LEVEL,
   XP_PERFECT_LEVEL_BONUS,
@@ -174,7 +175,10 @@ export function completeLevel(
   return { ...updated, badges: evaluateBadges(updated, verbs, now) };
 }
 
-/** Enregistre un score de Boss Rush (garde le meilleur). */
+/**
+ * Enregistre un score de Boss Rush : garde le meilleur, crédite de l'XP
+ * (mode arcade, distinct de la répétition espacée) et compte l'activité du jour.
+ */
 export function recordBossScore(
   profile: UserProfile,
   score: number,
@@ -183,6 +187,8 @@ export function recordBossScore(
 ): UserProfile {
   const updated: UserProfile = {
     ...profile,
+    xp: profile.xp + score * XP_PER_BOSS_HIT,
+    streak: registerActivity(profile.streak, now),
     stats: { ...profile.stats, bestBossScore: Math.max(profile.stats.bestBossScore, score) },
   };
   return { ...updated, badges: evaluateBadges(updated, verbs, now) };

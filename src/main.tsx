@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from '@/App';
 import { ProfileProvider } from '@/store/profile';
+import { NavProvider } from '@/store/navigation';
 import '@/index.css';
 
 const rootEl = document.getElementById('root');
@@ -12,7 +13,9 @@ if (!rootEl) {
 createRoot(rootEl).render(
   <StrictMode>
     <ProfileProvider>
-      <App />
+      <NavProvider>
+        <App />
+      </NavProvider>
     </ProfileProvider>
   </StrictMode>,
 );
