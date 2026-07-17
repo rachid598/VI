@@ -104,7 +104,7 @@ fonctions **pures** (sans effet de bord), donc facile à tester et à faire évo
 - [x] **Étape 4** — Mode Boss Rush (chrono 60 s, barre de vie, combos).
 - [x] **Étape 5** — XP, flammes (streak), badges et écran de collection + réglages.
 - [x] **Étape 6** — Contenu des 5 niveaux : **100 verbes** (indispensables, invariables, changeants, jumeaux, pièges).
-- [x] **Bonus** — Tous les niveaux accessibles d'emblée + mode **Révision mélangée** (pioche dans tous les niveaux).
+- [x] **Bonus** — Tous les niveaux accessibles d'emblée, mode **Révision mélangée**, et mode **Expert** (n'affiche que le français : deviner les 3 formes).
 
 > **Tous les niveaux sont accessibles d'emblée** (l'enseignant choisit sur
 > quoi travailler). Pour ajouter d'autres verbes, il suffit de compléter

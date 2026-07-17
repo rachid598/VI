@@ -35,7 +35,7 @@ export function createDefaultProfile(now: number = Date.now()): UserProfile {
       marathonien: null,
     },
     stats: { totalAnswers: 0, totalCorrect: 0, bestBossScore: 0 },
-    settings: { sound: true, showPhonetics: true, reduceMotion: false },
+    settings: { sound: true, showPhonetics: true, reduceMotion: false, guessInfinitive: false },
   };
 }
 

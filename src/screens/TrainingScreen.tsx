@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Volume2, X } from 'lucide-react';
-import type { GradedAnswer, LevelId, TrainingSession } from '@/types';
+import type { FormAnswer, FormKey, GradedAnswer, LevelId, TrainingSession } from '@/types';
 import { allVerbs } from '@/data/verbs';
 import { levels, levelsById } from '@/data/levels';
 import { useProfile } from '@/store/profile';
 import { useNav } from '@/store/navigation';
 import { createSession, currentQuestion, submitAnswer } from '@/lib/session';
+import { formsForPrompt } from '@/lib/grading';
 import { canSpeak, speak } from '@/lib/speech';
 import { ProgressBar } from '@/components/ProgressBar';
 import { FormField, type FieldStatus } from '@/components/FormField';
@@ -23,6 +24,14 @@ function nextLevelWithContent(levelId: LevelId): LevelId | undefined {
 /** Nombre de verbes tirés en mode « révision mélangée ». */
 const REVISION_SIZE = 15;
 
+const FIELD: Record<FormKey, { label: string; placeholder: string }> = {
+  base: { label: 'Infinitif', placeholder: 'ex. go' },
+  preterite: { label: 'Prétérit (past simple)', placeholder: 'ex. went' },
+  pastParticiple: { label: 'Participe passé', placeholder: 'ex. gone' },
+};
+
+const emptyAnswers = (): Record<FormKey, string> => ({ base: '', preterite: '', pastParticiple: '' });
+
 interface TrainingScreenProps {
   source: LevelId | 'revision';
 }
@@ -32,6 +41,8 @@ export function TrainingScreen({ source }: TrainingScreenProps) {
   const { navigate } = useNav();
 
   const isRevision = source === 'revision';
+  // Mode expert : n'afficher que le français, deviner les 3 formes.
+  const prompted = profile.settings.guessInfinitive ? 'all' : 'both';
   const sessionVerbs = useMemo(
     () => (isRevision ? allVerbs : allVerbs.filter((v) => v.levelId === source)),
     [isRevision, source],
@@ -40,7 +51,7 @@ export function TrainingScreen({ source }: TrainingScreenProps) {
 
   const buildSession = () =>
     createSession(source, sessionVerbs, {
-      prompted: 'both',
+      prompted,
       progress: profile.progress,
       shuffle: isRevision,
       ...(isRevision ? { size: REVISION_SIZE } : {}),
@@ -52,8 +63,7 @@ export function TrainingScreen({ source }: TrainingScreenProps) {
   const continueBtnRef = useRef<HTMLButtonElement>(null);
 
   const [session, setSession] = useState<TrainingSession>(buildSession);
-  const [preterite, setPreterite] = useState('');
-  const [pastParticiple, setPastParticiple] = useState('');
+  const [inputs, setInputs] = useState<Record<FormKey, string>>(emptyAnswers);
   const [graded, setGraded] = useState<GradedAnswer | null>(null);
 
   const question = currentQuestion(session);
@@ -79,25 +89,22 @@ export function TrainingScreen({ source }: TrainingScreenProps) {
     nextSessionRef.current = null;
     setSession(buildSession());
     setGraded(null);
-    setPreterite('');
-    setPastParticiple('');
+    setInputs(emptyAnswers());
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (graded) {
-      // Passer à la question suivante
       const next = nextSessionRef.current;
       if (!next) return;
       setSession(next);
       setGraded(null);
-      setPreterite('');
-      setPastParticiple('');
+      setInputs(emptyAnswers());
       nextSessionRef.current = null;
       return;
     }
     if (!question) return;
-    const res = submitAnswer(session, { preterite, pastParticiple });
+    const res = submitAnswer(session, inputs as FormAnswer);
     nextSessionRef.current = res.session;
     setGraded(res.graded);
     answer(question.verb, res.graded.correct);
@@ -120,7 +127,10 @@ export function TrainingScreen({ source }: TrainingScreenProps) {
   if (!question) return null;
 
   const { verb } = question;
-  const statusFor = (form: 'preterite' | 'pastParticiple'): FieldStatus => {
+  const askedForms = formsForPrompt(question.prompted);
+  const guessBase = question.prompted === 'all';
+
+  const statusFor = (form: FormKey): FieldStatus => {
     if (!graded) return 'idle';
     return graded.forms.find((f) => f.form === form)?.correct ? 'correct' : 'wrong';
   };
@@ -146,51 +156,67 @@ export function TrainingScreen({ source }: TrainingScreenProps) {
 
       {/* Consigne */}
       <p className="mb-4 text-center text-sm font-semibold text-slate-400">
-        Écris le <span className="text-brand-300">prétérit</span> et le{' '}
-        <span className="text-brand-300">participe passé</span>.
+        {guessBase ? (
+          <>
+            Trouve l'<span className="text-brand-300">infinitif</span>, le{' '}
+            <span className="text-brand-300">prétérit</span> et le{' '}
+            <span className="text-brand-300">participe passé</span>.
+          </>
+        ) : (
+          <>
+            Écris le <span className="text-brand-300">prétérit</span> et le{' '}
+            <span className="text-brand-300">participe passé</span>.
+          </>
+        )}
       </p>
 
       {/* Carte du verbe */}
       <div className="mb-6 rounded-3xl bg-white/5 p-6 text-center ring-1 ring-white/10">
-        <div className="flex items-center justify-center gap-2">
-          <span className="text-3xl font-black text-white">to {verb.base}</span>
-          {profile.settings.sound && canSpeak() && (
-            <button
-              type="button"
-              onClick={() => speak(verb.base)}
-              aria-label={`Écouter to ${verb.base}`}
-              className="rounded-full p-1.5 text-slate-300 hover:bg-white/10 hover:text-white"
-            >
-              <Volume2 size={20} />
-            </button>
-          )}
-        </div>
-        {profile.settings.showPhonetics && verb.phonetics?.base && (
-          <div className="mt-1 text-sm text-slate-400">{verb.phonetics.base}</div>
+        {guessBase ? (
+          // Mode expert : seulement le français
+          <>
+            <div className="text-[11px] font-bold uppercase tracking-wide text-slate-500">
+              Verbe français
+            </div>
+            <div className="mt-1 text-3xl font-black text-brand-200">{verb.translation}</div>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-3xl font-black text-white">to {verb.base}</span>
+              {profile.settings.sound && canSpeak() && (
+                <button
+                  type="button"
+                  onClick={() => speak(verb.base)}
+                  aria-label={`Écouter to ${verb.base}`}
+                  className="rounded-full p-1.5 text-slate-300 hover:bg-white/10 hover:text-white"
+                >
+                  <Volume2 size={20} />
+                </button>
+              )}
+            </div>
+            {profile.settings.showPhonetics && verb.phonetics?.base && (
+              <div className="mt-1 text-sm text-slate-400">{verb.phonetics.base}</div>
+            )}
+            <div className="mt-2 text-lg font-semibold text-brand-200">{verb.translation}</div>
+          </>
         )}
-        <div className="mt-2 text-lg font-semibold text-brand-200">{verb.translation}</div>
       </div>
 
-      {/* Formulaire */}
+      {/* Formulaire : un champ par forme demandée */}
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-        <FormField
-          key={`pret-${session.position}`}
-          label="Prétérit (past simple)"
-          value={preterite}
-          onChange={setPreterite}
-          status={statusFor('preterite')}
-          disabled={graded !== null}
-          placeholder="ex. went"
-          autoFocus
-        />
-        <FormField
-          label="Participe passé"
-          value={pastParticiple}
-          onChange={setPastParticiple}
-          status={statusFor('pastParticiple')}
-          disabled={graded !== null}
-          placeholder="ex. gone"
-        />
+        {askedForms.map((form, index) => (
+          <FormField
+            key={`${form}-${session.position}`}
+            label={FIELD[form].label}
+            value={inputs[form]}
+            onChange={(value) => setInputs((prev) => ({ ...prev, [form]: value }))}
+            status={statusFor(form)}
+            disabled={graded !== null}
+            placeholder={FIELD[form].placeholder}
+            autoFocus={index === 0}
+          />
+        ))}
 
         {graded && (
           <FeedbackCard

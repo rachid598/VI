@@ -41,6 +41,16 @@ describe('grading', () => {
     expect(normalize('  To GO ')).toBe('go');
     expect(gradeAnswer({ verb: go, prompted: 'pastParticiple' }, { pastParticiple: ' GONE ' }).correct).toBe(true);
   });
+
+  it('mode expert (all) : corrige les 3 formes, infinitif compris', () => {
+    const ok = gradeAnswer({ verb: go, prompted: 'all' }, { base: 'go', preterite: 'went', pastParticiple: 'gone' });
+    expect(ok.correct).toBe(true);
+    expect(ok.forms.map((f) => f.form)).toEqual(['base', 'preterite', 'pastParticiple']);
+
+    const ko = gradeAnswer({ verb: go, prompted: 'all' }, { base: 'goo', preterite: 'went', pastParticiple: 'gone' });
+    expect(ko.correct).toBe(false);
+    expect(ko.forms.find((f) => f.form === 'base')?.correct).toBe(false);
+  });
 });
 
 /* -------------------------------------------------------------------------- */

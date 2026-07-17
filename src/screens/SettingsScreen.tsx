@@ -1,4 +1,4 @@
-import { Eye, Trash2, Volume2, Zap } from 'lucide-react';
+import { Eye, GraduationCap, Trash2, Volume2, Zap } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { UserSettings } from '@/types';
 import { useProfile } from '@/store/profile';
@@ -62,6 +62,22 @@ export function SettingsScreen() {
     <div className="mx-auto flex min-h-full w-full max-w-md flex-col px-4 pb-28 pt-6">
       <h1 className="mb-6 text-2xl font-black text-white">Réglages</h1>
 
+      <h2 className="mb-3 px-1 text-sm font-black uppercase tracking-wider text-slate-400">
+        Mode de jeu
+      </h2>
+      <div className="mb-8 flex flex-col gap-3">
+        <ToggleRow
+          icon={GraduationCap}
+          label="Mode expert : deviner l'infinitif"
+          description="N'affiche que la traduction française : à toi de trouver les 3 formes (infinitif, prétérit, participe passé)."
+          checked={s.guessInfinitive}
+          onChange={set('guessInfinitive')}
+        />
+      </div>
+
+      <h2 className="mb-3 px-1 text-sm font-black uppercase tracking-wider text-slate-400">
+        Affichage
+      </h2>
       <div className="flex flex-col gap-3">
         <ToggleRow
           icon={Volume2}

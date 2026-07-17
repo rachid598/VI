@@ -142,9 +142,10 @@ export interface StreakState {
 
 /** Réglages simples (aucun compte requis). */
 export interface UserSettings {
-  sound: boolean;         // synthèse vocale / effets sonores
-  showPhonetics: boolean; // afficher la prononciation
-  reduceMotion: boolean;  // accessibilité : réduire les animations
+  sound: boolean;           // synthèse vocale / effets sonores
+  showPhonetics: boolean;   // afficher la prononciation
+  reduceMotion: boolean;    // accessibilité : réduire les animations
+  guessInfinitive: boolean; // mode expert : deviner aussi l'infinitif (français seul)
 }
 
 /**
@@ -184,11 +185,15 @@ export interface UserProfile {
  * 3. TYPES DE SESSION DE JEU (transitoires, non persistés)
  * ========================================================================== */
 
-/** Les deux formes qu'un élève peut avoir à produire. */
-export type FormKey = 'preterite' | 'pastParticiple';
+/** Les formes qu'un élève peut avoir à produire. */
+export type FormKey = 'base' | 'preterite' | 'pastParticiple';
 
-/** Quelle(s) forme(s) le verbe demande-t-il dans la question ? */
-export type PromptedForm = FormKey | 'both';
+/**
+ * Quelle(s) forme(s) le verbe demande-t-il dans la question ?
+ * - 'both' : prétérit + participe passé (infinitif donné)
+ * - 'all'  : infinitif + prétérit + participe passé (mode expert)
+ */
+export type PromptedForm = 'preterite' | 'pastParticiple' | 'both' | 'all';
 
 /** Une question posée pendant un entraînement ou un Boss Rush. */
 export interface Question {
@@ -196,8 +201,9 @@ export interface Question {
   prompted: PromptedForm;
 }
 
-/** Réponse saisie par l'élève (une ou deux formes selon la question). */
+/** Réponse saisie par l'élève (une à trois formes selon la question). */
 export interface FormAnswer {
+  base?: string;
   preterite?: string;
   pastParticiple?: string;
 }

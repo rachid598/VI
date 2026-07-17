@@ -38,9 +38,22 @@ export function getDefaultBackend(): StorageBackend {
   };
 }
 
-/** Point d'extension : migre un profil d'un ancien schéma vers le courant. */
-function migrate(data: UserProfile): UserProfile {
-  return { ...createDefaultProfile(data.createdAt), ...data, schemaVersion: SCHEMA_VERSION };
+/**
+ * Complète un profil chargé avec les valeurs par défaut manquantes
+ * (nouveaux réglages, nouveaux badges…) sans perdre les données existantes.
+ * Sert aussi de migration : le schéma est ramené à la version courante.
+ */
+function withDefaults(data: UserProfile): UserProfile {
+  const def = createDefaultProfile(data.createdAt ?? Date.now());
+  return {
+    ...def,
+    ...data,
+    schemaVersion: SCHEMA_VERSION,
+    streak: { ...def.streak, ...data.streak },
+    stats: { ...def.stats, ...data.stats },
+    settings: { ...def.settings, ...data.settings },
+    badges: { ...def.badges, ...data.badges },
+  };
 }
 
 /** Charge le profil (ou en crée un neuf si absent/corrompu). */
@@ -50,7 +63,7 @@ export function loadProfile(backend: StorageBackend = getDefaultBackend()): User
   try {
     const parsed = JSON.parse(raw) as UserProfile;
     if (!parsed || typeof parsed !== 'object') return createDefaultProfile();
-    return parsed.schemaVersion === SCHEMA_VERSION ? parsed : migrate(parsed);
+    return withDefaults(parsed);
   } catch {
     return createDefaultProfile();
   }

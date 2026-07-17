@@ -15,6 +15,7 @@ export function normalize(input: string): string {
 
 /** Réponse canonique d'une forme (ex. "was / were" pour le prétérit de be). */
 export function canonicalForm(verb: Verb, form: FormKey): string {
+  if (form === 'base') return verb.base;
   return form === 'preterite' ? verb.preterite : verb.pastParticiple;
 }
 
@@ -24,7 +25,7 @@ export function canonicalForm(verb: Verb, form: FormKey): string {
  */
 export function acceptedAnswers(verb: Verb, form: FormKey): string[] {
   const canonical = canonicalForm(verb, form);
-  const explicit = verb.accepted?.[form] ?? [];
+  const explicit = form === 'base' ? [] : (verb.accepted?.[form] ?? []);
   const derived = canonical
     .split(/[/,]/)
     .map((s) => s.trim())
@@ -47,18 +48,17 @@ function gradeForm(verb: Verb, form: FormKey, given: string): GradedForm {
   };
 }
 
+/** Formes à saisir selon la consigne. */
+export function formsForPrompt(prompted: Question['prompted']): FormKey[] {
+  if (prompted === 'all') return ['base', 'preterite', 'pastParticiple'];
+  if (prompted === 'both') return ['preterite', 'pastParticiple'];
+  return [prompted];
+}
+
 /** Corrige une réponse en fonction de la/des forme(s) demandée(s). */
 export function gradeAnswer(question: Question, answer: FormAnswer): GradedAnswer {
   const { verb, prompted } = question;
-  const forms: GradedForm[] = [];
-
-  if (prompted === 'preterite' || prompted === 'both') {
-    forms.push(gradeForm(verb, 'preterite', answer.preterite ?? ''));
-  }
-  if (prompted === 'pastParticiple' || prompted === 'both') {
-    forms.push(gradeForm(verb, 'pastParticiple', answer.pastParticiple ?? ''));
-  }
-
+  const forms = formsForPrompt(prompted).map((form) => gradeForm(verb, form, answer[form] ?? ''));
   return {
     verbId: verb.id,
     correct: forms.length > 0 && forms.every((f) => f.correct),

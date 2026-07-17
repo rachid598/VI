@@ -10,6 +10,7 @@ interface FeedbackCardProps {
 }
 
 const formLabel: Record<FormKey, string> = {
+  base: 'Infinitif',
   preterite: 'Prétérit',
   pastParticiple: 'Participe passé',
 };

@@ -15,7 +15,11 @@ interface BossQuestion {
 }
 
 const BOSS_EMOJIS = ['👹', '🐉', '👾', '🧟', '🤖', '👻'];
-const formLabel: Record<FormKey, string> = { preterite: 'Prétérit', pastParticiple: 'Participe passé' };
+const formLabel: Record<FormKey, string> = {
+  base: 'Infinitif',
+  preterite: 'Prétérit',
+  pastParticiple: 'Participe passé',
+};
 
 export function BossRushScreen() {
   const { profile, recordBossScore } = useProfile();
