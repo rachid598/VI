@@ -1,6 +1,7 @@
 import { Flame, Zap, Trophy, Swords, Shuffle, ChevronRight } from 'lucide-react';
 import { StatPill } from '@/components/StatPill';
 import { LevelCard } from '@/components/LevelCard';
+import { ModeSelector } from '@/components/ModeSelector';
 import { levels } from '@/data/levels';
 import { allVerbs } from '@/data/verbs';
 import { useProfile } from '@/store/profile';
@@ -13,7 +14,7 @@ import type { LevelId } from '@/types';
  * Les valeurs (XP, flamme, verbes maîtrisés) proviennent du profil persisté.
  */
 export function HomeScreen() {
-  const { profile } = useProfile();
+  const { profile, updateSettings } = useProfile();
   const { navigate } = useNav();
 
   const verbCountByLevel = (id: LevelId) => allVerbs.filter((verb) => verb.levelId === id).length;
@@ -58,6 +59,17 @@ export function HomeScreen() {
           Lancer un défi
         </button>
       </section>
+
+      {/* Sélecteur de mode d'entraînement */}
+      <div className="mb-6">
+        <h2 className="mb-2 px-1 text-sm font-black uppercase tracking-wider text-slate-400">
+          Mode d'entraînement
+        </h2>
+        <ModeSelector
+          value={profile.settings.guessInfinitive}
+          onChange={(expert) => updateSettings({ guessInfinitive: expert })}
+        />
+      </div>
 
       {/* Révision mélangée : pioche dans tous les niveaux */}
       <button
