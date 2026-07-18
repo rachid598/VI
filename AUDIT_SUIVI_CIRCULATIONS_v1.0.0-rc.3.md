@@ -4,6 +4,8 @@ Audit réalisé sur l'archive `applicationfinalev1.0.0rc.3.zip` (49 fichiers, ~1
 hors CSS). Périmètre : sécurité, architecture, qualité de code, RGPD/vie privée,
 exploitation, puis propositions de nouvelles fonctionnalités.
 
+Serveur cible confirmé : **Apache 2.4.41 (Ubuntu 20.04) · PHP 7.4.3 · MySQL 8.0.42**.
+
 ---
 
 ## 1. Verdict global
@@ -95,11 +97,18 @@ pourtant testable sans serveur : `pointsBalance()`, `trimesterWindow()`,
 viser d'abord les 10 fonctions de calcul les plus critiques. Même 30 tests changeraient
 la donne avant la 1.0.0 finale.
 
-**B. PHP 7.4 comme minimum supporté.**
-PHP 7.4 est en fin de vie depuis novembre 2022 (plus aucun correctif de sécurité). Le
-code semble compatible 8.x (pas de construction dépréciée relevée).
-→ Valider explicitement sous PHP 8.2/8.3 et relever le minimum dès que le serveur Kwartz
-le permet ; en attendant, documenter la version PHP réellement déployée.
+**B. Pile logicielle du serveur vieillissante (constat d'environnement, pas du code).**
+Le serveur cible tourne sous PHP 7.4.3 / Ubuntu 20.04 : le choix de « PHP 7.4 minimum »
+de l'application est donc justifié, et vérification faite, le code est réellement
+compatible 7.4 (aucune syntaxe PHP 8, replis `function_exists` sur `mb_*`, `iconv` et
+`gzencode`). MySQL 8.0.42 est pleinement compatible avec le schéma (fonctions JSON,
+`GET_LOCK`, `utf8mb4`).
+En revanche, Ubuntu 20.04 est sorti du support standard en mai 2025 : sans Ubuntu Pro/ESM
+ou sans mises à jour fournies par Kwartz, Apache et PHP ne reçoivent plus de correctifs
+de sécurité. L'application ne peut pas compenser une faille de sa plateforme.
+→ Vérifier auprès de Kwartz le canal de mises à jour du serveur ; conserver la
+compatibilité 7.4 comme contrainte ferme dans le code (ne pas introduire de syntaxe
+PHP 8) tant que la plateforme n'évolue pas.
 
 ### 🟠 Priorité moyenne
 
@@ -148,7 +157,15 @@ supporte un tableau `bootstrap_admins`. Si ce compte LDAP disparaît, il faut é
   éviterait un cache PWA obsolète.
 - **En-têtes de sécurité dépendants de `mod_headers`/`AllowOverride`** : `bootstrap.php`
   renvoie bien ses propres en-têtes pour l'API, mais les fichiers statiques dépendent du
-  `.htaccess`. À vérifier une fois sur le serveur réel (`curl -I`).
+  `.htaccess`. Apache 2.4.41 sait tout faire (`Require`, `FilesMatch`, `Header always`),
+  encore faut-il que `mod_headers` soit activé et `AllowOverride` autorisé. À vérifier
+  une fois déployé : `curl -I https://…/index.html` doit montrer la CSP, et
+  `https://…/var/settings.php` doit répondre 403.
+- **Extensions PHP à confirmer sur le serveur** (`php -m`) : `ldap` et `pdo_mysql` sont
+  contrôlées par l'installateur ; `mbstring`, `iconv` et `zlib` ne le sont pas mais ont
+  des replis propres. Sans `mbstring`, les limites de longueur comptent des octets (un
+  texte accentué est un peu plus vite tronqué) et la compression des instantanés est
+  désactivée sans `zlib` — l'installer est recommandé, pas indispensable.
 - **Dix fichiers Markdown à la racine** : un dossier `docs/` clarifierait l'archive.
 
 **Aucune vulnérabilité exploitable identifiée** (injection SQL/LDAP, XSS, CSRF, fixation
@@ -210,8 +227,10 @@ discernement, jamais de sanction automatique, sobriété, vie privée).
 
 ## 5. Ce que je ferais avant la 1.0.0 finale, dans l'ordre
 
-1. Une vingtaine de tests PHPUnit sur les calculs critiques (points, trimestres, CSV).
-2. Validation sous PHP 8.2/8.3 + vérification des en-têtes sur le serveur réel.
+1. Une vingtaine de tests PHPUnit sur les calculs critiques (points, trimestres, CSV) —
+   exécutés sous PHP 7.4 pour coller au serveur.
+2. Vérification sur le serveur réel : en-têtes (`curl -I`), 403 sur `var/`,
+   `php -m` (ldap, pdo_mysql, mbstring), et canal de mises à jour Ubuntu/Kwartz.
 3. Cron documenté pour `tools/cleanup.php` (engagement de rétention).
 4. Second administrateur de secours dans l'installateur.
 5. Ensuite seulement, les fonctionnalités — en commençant par la saisie hors-ligne.
