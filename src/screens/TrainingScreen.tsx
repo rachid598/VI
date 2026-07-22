@@ -24,10 +24,11 @@ function nextLevelWithContent(levelId: LevelId): LevelId | undefined {
 /** Nombre de verbes tirés en mode « révision mélangée ». */
 const REVISION_SIZE = 15;
 
-const FIELD: Record<FormKey, { label: string; placeholder: string }> = {
-  base: { label: 'Infinitif', placeholder: 'ex. go' },
-  preterite: { label: 'Prétérit (past simple)', placeholder: 'ex. went' },
-  pastParticiple: { label: 'Participe passé', placeholder: 'ex. gone' },
+// Pas d'exemple en filigrane : « ex. went / gone » révélait la réponse du verbe « go ».
+const FIELD: Record<FormKey, { label: string }> = {
+  base: { label: 'Infinitif' },
+  preterite: { label: 'Prétérit (past simple)' },
+  pastParticiple: { label: 'Participe passé' },
 };
 
 const emptyAnswers = (): Record<FormKey, string> => ({ base: '', preterite: '', pastParticiple: '' });
@@ -213,7 +214,6 @@ export function TrainingScreen({ source }: TrainingScreenProps) {
             onChange={(value) => setInputs((prev) => ({ ...prev, [form]: value }))}
             status={statusFor(form)}
             disabled={graded !== null}
-            placeholder={FIELD[form].placeholder}
             autoFocus={index === 0}
           />
         ))}
