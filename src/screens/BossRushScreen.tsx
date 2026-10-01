@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Check, Home, Swords, Timer, X, Zap } from 'lucide-react';
 import type { FormKey, Verb } from '@/types';
-import { allVerbs } from '@/data/verbs';
+import { activeVerbs } from '@/data/curriculum';
 import { useProfile } from '@/store/profile';
 import { useNav } from '@/store/navigation';
 import { canonicalForm, isFormCorrect } from '@/lib/grading';
@@ -25,8 +25,8 @@ export function BossRushScreen() {
   const { profile, recordBossScore } = useProfile();
   const { navigate } = useNav();
 
-  // Tous les verbes disponibles (tous les niveaux sont accessibles).
-  const pool = allVerbs;
+  // Uniquement les verbes ouverts aux élèves (data/curriculum.ts).
+  const pool = activeVerbs;
   const prevBestRef = useRef(profile.stats.bestBossScore);
   const finalizedRef = useRef(false);
   const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);

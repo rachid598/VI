@@ -1,10 +1,26 @@
 # ⚡ Verbes Héros — Verbes irréguliers anglais (PWA)
 
 Application web progressive (PWA) pour aider les **collégiens français** à réviser
-leurs **verbes irréguliers anglais** de façon ludique : niveaux, répétition
-espacée, mode Boss Rush, XP, flammes (streak) et badges.
+leurs **verbes irréguliers anglais** de façon ludique : répétition espacée,
+mode Boss Rush, XP, flammes (streak) et badges.
 
 > 🇬🇧 Variété de référence : **anglais britannique**.
+
+## 🎓 Programme de la classe (pour l'enseignant)
+
+La liste complète du manuel (**119 verbes**, « Précis grammatical n°27 »,
+pp. 160-161) est dans `src/data/verbs.ts`, dans l'ordre du manuel. Mais les
+élèves ne s'entraînent **que sur les verbes ouverts**, définis en **un seul
+endroit** : `src/data/curriculum.ts`.
+
+```ts
+export const ACTIVE_BASES = ['cast', 'catch', 'choose', 'cling', 'come'];
+```
+
+Pour ouvrir de nouveaux verbes, ajoute leurs infinitifs à cette liste puis
+déploie : entraînement, révision mélangée, Boss Rush et badges suivent
+automatiquement. Une faute de frappe fait échouer le build (le site en ligne
+reste alors inchangé).
 
 ## 🛠️ Stack technique
 
@@ -65,8 +81,8 @@ verbes-irreguliers/
     ├── types/
     │   └── index.ts           # ✅ Verb, UserProfile, Level, session, badges…
     ├── data/
-    │   ├── verbs.ts           # ✅ contenu : 100 verbes (5 niveaux)
-    │   ├── levels.ts          # métadonnées des niveaux
+    │   ├── verbs.ts           # ✅ liste complète du manuel : 119 verbes
+    │   ├── curriculum.ts      # ✅ verbes OUVERTS aux élèves (à modifier)
     │   └── badges.ts          # catalogue des badges
     ├── lib/                   # ✅ logique métier PURE (testée)
     │   ├── constants.ts       # constantes de jeu réglables
@@ -81,7 +97,7 @@ verbes-irreguliers/
     │   ├── profile.tsx        # contexte profil + persistance + useProfile()
     │   └── navigation.tsx     # navigation entre écrans + useNav()
     ├── components/            # briques UI réutilisables
-    │   ├── StatPill.tsx  LevelCard.tsx  ProgressBar.tsx
+    │   ├── StatPill.tsx  PracticeCard.tsx  ProgressBar.tsx
     │   ├── FormField.tsx  FeedbackCard.tsx  BadgeTile.tsx
     │   └── BossHealthBar.tsx  BottomNav.tsx
     └── screens/               # écrans complets
@@ -103,9 +119,5 @@ fonctions **pures** (sans effet de bord), donc facile à tester et à faire évo
 - [x] **Étape 3** — Écran d'entraînement (feedback vert/rouge, correction, phonétique, audio).
 - [x] **Étape 4** — Mode Boss Rush (chrono 60 s, barre de vie, combos).
 - [x] **Étape 5** — XP, flammes (streak), badges et écran de collection + réglages.
-- [x] **Étape 6** — Contenu des 5 niveaux : **100 verbes** (indispensables, invariables, changeants, jumeaux, pièges).
-- [x] **Bonus** — Tous les niveaux accessibles d'emblée, mode **Révision mélangée**, et mode **Expert** (n'affiche que le français : deviner les 3 formes).
-
-> **Tous les niveaux sont accessibles d'emblée** (l'enseignant choisit sur
-> quoi travailler). Pour ajouter d'autres verbes, il suffit de compléter
-> `src/data/verbs.ts` — la mécanique de jeu s'applique automatiquement.
+- [x] **Étape 6** — Liste complète du manuel (119 verbes) + lot ouvert aux élèves configurable (`data/curriculum.ts`).
+- [x] **Bonus** — Mode **Révision mélangée**, et mode **Expert** (n'affiche que le français : deviner les 3 formes).

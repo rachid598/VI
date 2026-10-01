@@ -1,10 +1,10 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
-import type { LevelId } from '@/types';
+import type { TrainingSource } from '@/types';
 
 /** Navigation simple entre écrans (pas de router externe pour une PWA légère). */
 export type Route =
   | { name: 'home' }
-  | { name: 'training'; source: LevelId | 'revision' }
+  | { name: 'training'; source: TrainingSource }
   | { name: 'boss' }
   | { name: 'badges' }
   | { name: 'settings' };

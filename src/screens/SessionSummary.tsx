@@ -5,7 +5,7 @@ interface SessionSummaryProps {
   correct: number;
   total: number;
   xpGained: number;
-  levelTitle: string;
+  title: string;
   onReplay: () => void;
   onHome: () => void;
 }
@@ -16,7 +16,7 @@ export function SessionSummary({
   correct,
   total,
   xpGained,
-  levelTitle,
+  title,
   onReplay,
   onHome,
 }: SessionSummaryProps) {
@@ -28,7 +28,7 @@ export function SessionSummary({
       <h1 className="mt-4 text-2xl font-black text-white">
         {perfect ? 'Sans faute !' : 'Bien joué !'}
       </h1>
-      <p className="mt-1 text-sm text-slate-400">{levelTitle}</p>
+      <p className="mt-1 text-sm text-slate-400">{title}</p>
 
       <div className="mt-8 grid w-full grid-cols-3 gap-3">
         <div className="rounded-2xl bg-white/5 p-4 ring-1 ring-white/10">

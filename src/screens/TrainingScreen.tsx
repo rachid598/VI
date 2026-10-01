@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Volume2, X } from 'lucide-react';
-import type { FormAnswer, FormKey, GradedAnswer, LevelId, TrainingSession } from '@/types';
-import { allVerbs } from '@/data/verbs';
-import { levels, levelsById } from '@/data/levels';
+import type { FormAnswer, FormKey, GradedAnswer, TrainingSession, TrainingSource } from '@/types';
+import { activeVerbs } from '@/data/curriculum';
 import { useProfile } from '@/store/profile';
 import { useNav } from '@/store/navigation';
 import { createSession, currentQuestion, submitAnswer } from '@/lib/session';
@@ -13,16 +12,8 @@ import { FormField, type FieldStatus } from '@/components/FormField';
 import { FeedbackCard } from '@/components/FeedbackCard';
 import { SessionSummary } from '@/screens/SessionSummary';
 
-/** Prochain niveau (par ordre) qui possède réellement des verbes. */
-function nextLevelWithContent(levelId: LevelId): LevelId | undefined {
-  const order = levelsById[levelId]?.order ?? 0;
-  return levels
-    .filter((l) => l.order > order && allVerbs.some((v) => v.levelId === l.id))
-    .sort((a, b) => a.order - b.order)[0]?.id;
-}
-
-/** Nombre de verbes tirés en mode « révision mélangée ». */
-const REVISION_SIZE = 15;
+/** Nombre maximum de verbes dans une session (utile quand beaucoup de verbes sont ouverts). */
+const SESSION_SIZE = 15;
 
 // Pas d'exemple en filigrane : « ex. went / gone » révélait la réponse du verbe « go ».
 const FIELD: Record<FormKey, { label: string }> = {
@@ -34,28 +25,25 @@ const FIELD: Record<FormKey, { label: string }> = {
 const emptyAnswers = (): Record<FormKey, string> => ({ base: '', preterite: '', pastParticiple: '' });
 
 interface TrainingScreenProps {
-  source: LevelId | 'revision';
+  source: TrainingSource;
 }
 
 export function TrainingScreen({ source }: TrainingScreenProps) {
-  const { profile, answer, completeLevel } = useProfile();
+  const { profile, answer, completeSession } = useProfile();
   const { navigate } = useNav();
 
   const isRevision = source === 'revision';
   // Mode expert : n'afficher que le français, deviner les 3 formes.
   const prompted = profile.settings.guessInfinitive ? 'all' : 'both';
-  const sessionVerbs = useMemo(
-    () => (isRevision ? allVerbs : allVerbs.filter((v) => v.levelId === source)),
-    [isRevision, source],
-  );
-  const title = isRevision ? 'Révision mélangée' : (levelsById[source]?.title ?? 'Entraînement');
+  const title = isRevision ? 'Révision mélangée' : 'Entraînement';
 
+  // Les élèves ne travaillent que sur les verbes ouverts (data/curriculum.ts).
   const buildSession = () =>
-    createSession(source, sessionVerbs, {
+    createSession(source, activeVerbs, {
       prompted,
       progress: profile.progress,
       shuffle: isRevision,
-      ...(isRevision ? { size: REVISION_SIZE } : {}),
+      size: SESSION_SIZE,
     });
 
   const startXpRef = useRef(profile.xp);
@@ -69,15 +57,13 @@ export function TrainingScreen({ source }: TrainingScreenProps) {
 
   const question = currentQuestion(session);
 
-  // À la fin : bonus « sans-faute » + déblocage (uniquement pour un vrai niveau).
+  // À la fin : bonus « sans-faute » (uniquement pour l'entraînement, pas la révision).
   useEffect(() => {
     if (session.finished && !finalizedRef.current) {
       finalizedRef.current = true;
-      if (source !== 'revision') {
-        completeLevel(session.perfect, nextLevelWithContent(source));
-      }
+      if (source === 'training') completeSession(session.perfect);
     }
-  }, [session.finished, session.perfect, source, completeLevel]);
+  }, [session.finished, session.perfect, source, completeSession]);
 
   // Quand la correction s'affiche, on met le focus sur « Continuer » (Entrée).
   useEffect(() => {
@@ -118,7 +104,7 @@ export function TrainingScreen({ source }: TrainingScreenProps) {
         correct={session.correctCount}
         total={session.answeredCount}
         xpGained={Math.max(0, profile.xp - startXpRef.current)}
-        levelTitle={title}
+        title={title}
         onReplay={restart}
         onHome={() => navigate({ name: 'home' })}
       />

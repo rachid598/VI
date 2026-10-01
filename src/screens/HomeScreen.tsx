@@ -1,23 +1,20 @@
 import { Flame, Zap, Trophy, Swords, Shuffle, ChevronRight } from 'lucide-react';
 import { StatPill } from '@/components/StatPill';
-import { LevelCard } from '@/components/LevelCard';
+import { PracticeCard } from '@/components/PracticeCard';
 import { ModeSelector } from '@/components/ModeSelector';
-import { levels } from '@/data/levels';
-import { allVerbs } from '@/data/verbs';
+import { activeVerbs } from '@/data/curriculum';
 import { useProfile } from '@/store/profile';
 import { useNav } from '@/store/navigation';
-import { masteredCountForLevel, studentLevel } from '@/lib/profile';
-import type { LevelId } from '@/types';
+import { masteredCount, studentLevel } from '@/lib/profile';
 
 /**
  * Écran d'accueil, branché sur l'état réel (`useProfile`).
- * Les valeurs (XP, flamme, verbes maîtrisés) proviennent du profil persisté.
+ * Les élèves ne voient et ne travaillent que les verbes ouverts
+ * par l'enseignant (data/curriculum.ts).
  */
 export function HomeScreen() {
   const { profile, updateSettings } = useProfile();
   const { navigate } = useNav();
-
-  const verbCountByLevel = (id: LevelId) => allVerbs.filter((verb) => verb.levelId === id).length;
 
   return (
     <div className="mx-auto flex min-h-full w-full max-w-md flex-col px-4 pb-28 pt-6">
@@ -54,6 +51,7 @@ export function HomeScreen() {
         <button
           type="button"
           onClick={() => navigate({ name: 'boss' })}
+          disabled={activeVerbs.length === 0}
           className="mt-4 w-full rounded-2xl bg-white/95 py-3 text-sm font-black text-brand-700 shadow-md transition-transform active:scale-[0.98]"
         >
           Lancer un défi
@@ -71,39 +69,35 @@ export function HomeScreen() {
         />
       </div>
 
-      {/* Révision mélangée : pioche dans tous les niveaux */}
-      <button
-        type="button"
-        onClick={() => navigate({ name: 'training', source: 'revision' })}
-        className="mb-6 flex w-full items-center gap-3 rounded-3xl bg-white/5 p-4 text-left ring-1 ring-white/10 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/10"
-      >
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/15">
-          <Shuffle size={22} className="text-emerald-300" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <h3 className="text-base font-extrabold text-white">Révision mélangée</h3>
-          <p className="truncate text-xs text-slate-400">Un mix de verbes de tous les niveaux.</p>
-        </div>
-        <ChevronRight size={22} className="shrink-0 text-slate-500" />
-      </button>
-
-      {/* Parcours de niveaux */}
+      {/* Entraînement sur les verbes de la leçon */}
       <section className="flex flex-col gap-3">
-        <h2 className="px-1 text-sm font-black uppercase tracking-wider text-slate-400">Parcours</h2>
-        {levels.map((level) => {
-          const count = verbCountByLevel(level.id);
-          // Tous les niveaux disposant de verbes sont accessibles directement.
-          return (
-            <LevelCard
-              key={level.id}
-              level={level}
-              verbCount={count}
-              masteredCount={masteredCountForLevel(profile, allVerbs, level.id)}
-              locked={count === 0}
-              onClick={() => navigate({ name: 'training', source: level.id })}
-            />
-          );
-        })}
+        <h2 className="px-1 text-sm font-black uppercase tracking-wider text-slate-400">
+          Mes verbes
+        </h2>
+        <PracticeCard
+          title="Verbes de la leçon"
+          subtitle={`${activeVerbs.length} verbes à retenir`}
+          verbCount={activeVerbs.length}
+          masteredCount={masteredCount(profile, activeVerbs)}
+          onClick={() => navigate({ name: 'training', source: 'training' })}
+        />
+
+        {/* Révision mélangée : mêmes verbes, dans le désordre */}
+        <button
+          type="button"
+          onClick={() => navigate({ name: 'training', source: 'revision' })}
+          disabled={activeVerbs.length === 0}
+          className="flex w-full items-center gap-3 rounded-3xl bg-white/5 p-4 text-left ring-1 ring-white/10 transition-all duration-200 enabled:hover:-translate-y-0.5 enabled:hover:bg-white/10 disabled:opacity-60"
+        >
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/15">
+            <Shuffle size={22} className="text-emerald-300" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-base font-extrabold text-white">Révision mélangée</h3>
+            <p className="truncate text-xs text-slate-400">Les mêmes verbes, dans le désordre.</p>
+          </div>
+          <ChevronRight size={22} className="shrink-0 text-slate-500" />
+        </button>
       </section>
 
       <p className="mt-8 text-center text-[11px] leading-relaxed text-slate-500">

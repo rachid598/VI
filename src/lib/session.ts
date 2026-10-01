@@ -1,10 +1,10 @@
 import type {
   FormAnswer,
   GradedAnswer,
-  LevelId,
   PromptedForm,
   Question,
   TrainingSession,
+  TrainingSource,
   Verb,
   VerbProgress,
 } from '@/types';
@@ -22,7 +22,7 @@ interface CreateSessionOptions {
   size?: number;
   prompted?: PromptedForm;
   progress?: Record<string, VerbProgress>;
-  /** Ordre aléatoire (mode « révision mélangée ») plutôt que par fréquence. */
+  /** Ordre aléatoire (mode « révision mélangée ») plutôt que l'ordre du manuel. */
   shuffle?: boolean;
 }
 
@@ -39,7 +39,7 @@ function shuffleArray<T>(arr: T[]): T[] {
 
 /**
  * Sélectionne les verbes d'une session : ceux « dus » d'abord (répétition
- * espacée), puis les autres — triés par fréquence, ou mélangés si `random`.
+ * espacée), puis les autres — dans l'ordre du manuel, ou mélangés si `random`.
  */
 export function selectVerbs(
   verbs: Verb[],
@@ -51,7 +51,7 @@ export function selectVerbs(
   const order = (list: Verb[]) =>
     random
       ? shuffleArray(list)
-      : list.slice().sort((a, b) => (a.frequencyRank ?? 999) - (b.frequencyRank ?? 999));
+      : list.slice().sort((a, b) => a.order - b.order);
   const due = order(verbs.filter((v) => isDue(progress[v.id], now)));
   const rest = order(verbs.filter((v) => !isDue(progress[v.id], now)));
   return [...due, ...rest].slice(0, size);
@@ -59,7 +59,7 @@ export function selectVerbs(
 
 /** Crée une session à partir d'un lot de verbes. */
 export function createSession(
-  source: LevelId | 'revision',
+  source: TrainingSource,
   verbs: Verb[],
   options: CreateSessionOptions = {},
 ): TrainingSession {

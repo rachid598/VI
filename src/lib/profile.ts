@@ -1,4 +1,4 @@
-import type { BadgeId, LevelId, StreakState, UserProfile, Verb } from '@/types';
+import type { BadgeId, StreakState, UserProfile, Verb } from '@/types';
 import { createProgress, isMastered, reviewVerb } from './srs';
 import {
   BADGE_THRESHOLDS,
@@ -25,8 +25,6 @@ export function createDefaultProfile(now: number = Date.now()): UserProfile {
     xp: 0,
     streak: { current: 0, longest: 0, lastActiveDate: null },
     progress: {},
-    // Tous les niveaux sont accessibles d'emblée (l'enseignant choisit).
-    unlockedLevels: ['indispensables', 'invariables', 'changeants', 'jumeaux', 'pieges'],
     badges: {
       infaillible: null,
       flash: null,
@@ -92,7 +90,10 @@ export function decayStreak(streak: StreakState, now: number): StreakState {
 /*  Badges                                                                    */
 /* -------------------------------------------------------------------------- */
 
-/** Réévalue les badges automatiques (les autres sont débloqués par événement). */
+/**
+ * Réévalue les badges automatiques (les autres sont débloqués par événement).
+ * `verbs` = les verbes actuellement ouverts aux élèves.
+ */
 export function evaluateBadges(
   profile: UserProfile,
   verbs: Verb[],
@@ -107,12 +108,9 @@ export function evaluateBadges(
   if (profile.stats.bestBossScore >= BADGE_THRESHOLDS.flashBossScore) unlock('flash');
   if (profile.stats.totalAnswers >= BADGE_THRESHOLDS.marathonienAnswers) unlock('marathonien');
 
-  const levelIds = Array.from(new Set(verbs.map((v) => v.levelId)));
-  const anyLevelMastered = levelIds.some((lid) => {
-    const inLevel = verbs.filter((v) => v.levelId === lid);
-    return inLevel.length > 0 && inLevel.every((v) => isMastered(profile.progress[v.id]));
-  });
-  if (anyLevelMastered) unlock('polyglotte');
+  const allMastered =
+    verbs.length > 0 && verbs.every((v) => isMastered(profile.progress[v.id]));
+  if (allMastered) unlock('polyglotte');
 
   return badges;
 }
@@ -152,13 +150,12 @@ export function applyAnswer(
   return { ...updated, badges: evaluateBadges(updated, verbs, now) };
 }
 
-/** Fin d'un niveau : bonus si sans faute, déblocage du niveau suivant. */
-export function completeLevel(
+/** Fin d'un entraînement : bonus d'XP et badge « Infaillible » si sans faute. */
+export function completeSession(
   profile: UserProfile,
   perfect: boolean,
   verbs: Verb[],
   now: number,
-  nextLevelId?: LevelId,
 ): UserProfile {
   const badges = { ...profile.badges };
   let xp = profile.xp;
@@ -167,12 +164,7 @@ export function completeLevel(
     if (badges.infaillible == null) badges.infaillible = now;
   }
 
-  const unlockedLevels =
-    nextLevelId && !profile.unlockedLevels.includes(nextLevelId)
-      ? [...profile.unlockedLevels, nextLevelId]
-      : profile.unlockedLevels;
-
-  const updated: UserProfile = { ...profile, xp, badges, unlockedLevels };
+  const updated: UserProfile = { ...profile, xp, badges };
   return { ...updated, badges: evaluateBadges(updated, verbs, now) };
 }
 
@@ -199,11 +191,7 @@ export function recordBossScore(
 /*  Sélecteurs (lecture)                                                      */
 /* -------------------------------------------------------------------------- */
 
-/** Nombre de verbes maîtrisés dans un niveau donné. */
-export function masteredCountForLevel(
-  profile: UserProfile,
-  verbs: Verb[],
-  levelId: LevelId,
-): number {
-  return verbs.filter((v) => v.levelId === levelId && isMastered(profile.progress[v.id])).length;
+/** Nombre de verbes maîtrisés parmi ceux donnés. */
+export function masteredCount(profile: UserProfile, verbs: Verb[]): number {
+  return verbs.filter((v) => isMastered(profile.progress[v.id])).length;
 }

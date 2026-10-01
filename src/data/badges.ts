@@ -5,7 +5,7 @@ export const badges: BadgeDefinition[] = [
   {
     id: 'infaillible',
     label: 'Infaillible',
-    description: 'Termine un niveau sans aucune faute.',
+    description: 'Termine un entraînement sans aucune faute.',
     emoji: '🎯',
   },
   {
@@ -23,7 +23,7 @@ export const badges: BadgeDefinition[] = [
   {
     id: 'polyglotte',
     label: 'Polyglotte',
-    description: 'Maîtrise 100 % d’un niveau.',
+    description: 'Maîtrise tous les verbes du moment.',
     emoji: '🧠',
   },
   {

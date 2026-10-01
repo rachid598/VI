@@ -1,15 +1,14 @@
 import { Flame, Sparkles, Star, Trophy } from 'lucide-react';
 import { badges } from '@/data/badges';
-import { allVerbs } from '@/data/verbs';
+import { activeVerbs } from '@/data/curriculum';
 import { useProfile } from '@/store/profile';
-import { studentLevel } from '@/lib/profile';
-import { isMastered } from '@/lib/srs';
+import { masteredCount as countMastered, studentLevel } from '@/lib/profile';
 import { BadgeTile } from '@/components/BadgeTile';
 
 export function BadgesScreen() {
   const { profile } = useProfile();
 
-  const masteredCount = allVerbs.filter((v) => isMastered(profile.progress[v.id])).length;
+  const masteredCount = countMastered(profile, activeVerbs);
   const unlockedBadges = badges.filter((b) => profile.badges[b.id] != null).length;
 
   const stats = [

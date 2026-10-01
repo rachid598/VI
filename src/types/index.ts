@@ -3,7 +3,7 @@
  *  Types du domaine — Verbes Irréguliers (PWA collège)
  * ============================================================================
  *  Ce fichier est la "source de vérité" du typage. Deux blocs :
- *   1. Le CONTENU pédagogique   -> Verb, Level (immuable, vient de /data)
+ *   1. Le CONTENU pédagogique   -> Verb (immuable, vient de /data)
  *   2. La PROGRESSION de l'élève -> UserProfile (mutable, stockée en LocalStorage)
  * ============================================================================
  */
@@ -11,14 +11,6 @@
 /* ==========================================================================
  * 1. CONTENU PÉDAGOGIQUE
  * ========================================================================== */
-
-/** Identifiant d'un niveau (regroupement thématique / morphologique). */
-export type LevelId =
-  | 'indispensables' // N1 — les plus fréquents (be, have, go…)
-  | 'invariables'    // N2 — base = prétérit = participe passé (cut/cut/cut)
-  | 'changeants'     // N3 — forte variation vocalique (sing/sang/sung)
-  | 'jumeaux'        // N4 — prétérit = participe passé (buy/bought/bought)
-  | 'pieges';        // N5 — les plus trompeurs (lie, lay, read…)
 
 /**
  * Prononciation textuelle (API phonétique / IPA) d'un verbe.
@@ -45,8 +37,8 @@ export interface VerbExample {
 export interface Verb {
   /** Slug stable et unique (ne change jamais) — ex. "to-be". */
   id: string;
-  /** Niveau de rattachement. */
-  levelId: LevelId;
+  /** Position dans la liste du manuel (1 = awake … 119 = throw). */
+  order: number;
 
   base: string;
   preterite: string;
@@ -67,23 +59,6 @@ export interface Verb {
 
   phonetics?: VerbPhonetics;
   example?: VerbExample;
-
-  /** true si base = prétérit = participe passé (cut/cut/cut). */
-  isInvariant?: boolean;
-  /** Rang de fréquence d'usage (1 = très fréquent) — utile pour le tri. */
-  frequencyRank?: number;
-}
-
-/** Métadonnées d'un niveau (pour l'écran d'accueil / la carte du monde). */
-export interface Level {
-  id: LevelId;
-  /** Ordre d'affichage / de déblocage (1, 2, 3…). */
-  order: number;
-  title: string;      // "Les indispensables"
-  subtitle: string;   // court pitch pour l'élève
-  emoji: string;      // touche ludique dans l'UI
-  /** Couleur d'accent (token Tailwind ou hex) pour la carte du niveau. */
-  accent: string;
 }
 
 /* ==========================================================================
@@ -118,10 +93,10 @@ export interface VerbProgress {
 
 /** Identifiants des badges déblocables. */
 export type BadgeId =
-  | 'infaillible'  // un niveau réussi sans aucune faute
+  | 'infaillible'  // un entraînement réussi sans aucune faute
   | 'flash'        // score élevé en mode Boss Rush
   | 'perseverant'  // streak de plusieurs jours consécutifs
-  | 'polyglotte'   // premier niveau 100% maîtrisé
+  | 'polyglotte'   // tous les verbes ouverts maîtrisés
   | 'marathonien'; // grand nombre de réponses cumulées
 
 /** Définition (statique) d'un badge — pour l'affichage de la collection. */
@@ -164,9 +139,6 @@ export interface UserProfile {
 
   /** Progression par verbe — clé = Verb["id"]. */
   progress: Record<string, VerbProgress>;
-
-  /** Niveaux débloqués par l'élève. */
-  unlockedLevels: LevelId[];
 
   /** Badge -> horodatage de déblocage (null = non débloqué). */
   badges: Record<BadgeId, number | null>;
@@ -225,12 +197,18 @@ export interface GradedAnswer {
 }
 
 /**
+ * Type de session : « training » (dans l'ordre du manuel) ou
+ * « revision » (ordre aléatoire). Les deux piochent dans les verbes ouverts.
+ */
+export type TrainingSource = 'training' | 'revision';
+
+/**
  * État transitoire d'une session d'entraînement.
  * La file `queue` peut grandir : un verbe raté y est réinséré plus loin
  * pour réapparaître rapidement.
  */
 export interface TrainingSession {
-  source: LevelId | 'revision';
+  source: TrainingSource;
   queue: Question[];
   /** Index de la question courante dans `queue`. */
   position: number;

@@ -7,11 +7,11 @@ import {
   useReducer,
   type ReactNode,
 } from 'react';
-import type { LevelId, UserProfile, UserSettings, Verb } from '@/types';
-import { allVerbs } from '@/data/verbs';
+import type { UserProfile, UserSettings, Verb } from '@/types';
+import { activeVerbs } from '@/data/curriculum';
 import {
   applyAnswer,
-  completeLevel as completeLevelFn,
+  completeSession as completeSessionFn,
   createDefaultProfile,
   decayStreak,
   recordBossScore as recordBossScoreFn,
@@ -25,7 +25,7 @@ import { loadProfile, saveProfile } from '@/lib/storage';
 
 type Action =
   | { type: 'ANSWER'; verb: Verb; correct: boolean; now: number }
-  | { type: 'COMPLETE_LEVEL'; perfect: boolean; nextLevelId?: LevelId; now: number }
+  | { type: 'COMPLETE_SESSION'; perfect: boolean; now: number }
   | { type: 'BOSS_SCORE'; score: number; now: number }
   | { type: 'UPDATE_SETTINGS'; settings: Partial<UserSettings> }
   | { type: 'RESET' };
@@ -33,11 +33,11 @@ type Action =
 function reducer(state: UserProfile, action: Action): UserProfile {
   switch (action.type) {
     case 'ANSWER':
-      return applyAnswer(state, action.verb, action.correct, allVerbs, action.now);
-    case 'COMPLETE_LEVEL':
-      return completeLevelFn(state, action.perfect, allVerbs, action.now, action.nextLevelId);
+      return applyAnswer(state, action.verb, action.correct, activeVerbs, action.now);
+    case 'COMPLETE_SESSION':
+      return completeSessionFn(state, action.perfect, activeVerbs, action.now);
     case 'BOSS_SCORE':
-      return recordBossScoreFn(state, action.score, allVerbs, action.now);
+      return recordBossScoreFn(state, action.score, activeVerbs, action.now);
     case 'UPDATE_SETTINGS':
       return { ...state, settings: { ...state.settings, ...action.settings } };
     case 'RESET':
@@ -57,7 +57,7 @@ function init(): UserProfile {
 interface ProfileContextValue {
   profile: UserProfile;
   answer: (verb: Verb, correct: boolean) => void;
-  completeLevel: (perfect: boolean, nextLevelId?: LevelId) => void;
+  completeSession: (perfect: boolean) => void;
   recordBossScore: (score: number) => void;
   updateSettings: (settings: Partial<UserSettings>) => void;
   reset: () => void;
@@ -77,8 +77,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'ANSWER', verb, correct, now: Date.now() });
   }, []);
 
-  const completeLevel = useCallback((perfect: boolean, nextLevelId?: LevelId) => {
-    dispatch({ type: 'COMPLETE_LEVEL', perfect, nextLevelId, now: Date.now() });
+  const completeSession = useCallback((perfect: boolean) => {
+    dispatch({ type: 'COMPLETE_SESSION', perfect, now: Date.now() });
   }, []);
 
   const recordBossScore = useCallback((score: number) => {
@@ -94,8 +94,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<ProfileContextValue>(
-    () => ({ profile, answer, completeLevel, recordBossScore, updateSettings, reset }),
-    [profile, answer, completeLevel, recordBossScore, updateSettings, reset],
+    () => ({ profile, answer, completeSession, recordBossScore, updateSettings, reset }),
+    [profile, answer, completeSession, recordBossScore, updateSettings, reset],
   );
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;

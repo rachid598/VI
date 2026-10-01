@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { verbsById, level1Verbs, allVerbs } from '@/data/verbs';
+import { verbsById, allVerbs } from '@/data/verbs';
+import { activeVerbs } from '@/data/curriculum';
 import { gradeAnswer, normalize } from '@/lib/grading';
 import { createProgress, isDue, reviewVerb } from '@/lib/srs';
 import {
@@ -16,6 +17,7 @@ import type { UserProfile } from '@/types';
 
 const be = verbsById['to-be']!;
 const go = verbsById['to-go']!;
+const doVerb = verbsById['to-do']!;
 const T0 = new Date(2026, 0, 15, 12, 0, 0).getTime(); // 15 janv. 2026, midi local
 
 /* -------------------------------------------------------------------------- */
@@ -142,12 +144,13 @@ describe('profile — badges', () => {
     expect(evaluateBadges(profile, allVerbs, T0).marathonien).not.toBeNull();
   });
 
-  it('débloque « polyglotte » quand un niveau est 100 % maîtrisé', () => {
+  it('débloque « polyglotte » quand tous les verbes ouverts sont maîtrisés', () => {
     let p = createDefaultProfile(T0);
-    for (const v of level1Verbs) {
-      p = applyAnswer(p, v, true, allVerbs, T0);
-      p = applyAnswer(p, v, true, allVerbs, T0);
-      p = applyAnswer(p, v, true, allVerbs, T0);
+    for (const v of activeVerbs) {
+      p = applyAnswer(p, v, true, activeVerbs, T0);
+      p = applyAnswer(p, v, true, activeVerbs, T0);
+      expect(p.badges.polyglotte).toBeNull(); // pas encore : il reste des verbes
+      p = applyAnswer(p, v, true, activeVerbs, T0);
     }
     expect(p.badges.polyglotte).not.toBeNull();
   });
@@ -155,13 +158,14 @@ describe('profile — badges', () => {
 
 /* -------------------------------------------------------------------------- */
 describe('session', () => {
-  it('sélectionne les verbes dus en priorité, triés par fréquence', () => {
-    const sel = selectVerbs(level1Verbs, {}, T0, 3);
-    expect(sel.map((v) => v.id)).toEqual(['to-be', 'to-have', 'to-do']);
+  it('sélectionne les verbes dans l’ordre du manuel', () => {
+    // be (n°2), do (n°27), go (n°44) — passés dans le désordre
+    const sel = selectVerbs([go, be, doVerb], {}, T0, 3);
+    expect(sel.map((v) => v.id)).toEqual(['to-be', 'to-do', 'to-go']);
   });
 
   it('réinsère un verbe raté et casse le « sans-faute »', () => {
-    const session = createSession('indispensables', level1Verbs, { size: 3, now: T0 });
+    const session = createSession('training', [be, doVerb, go], { size: 3, now: T0 });
     const { session: s1, graded } = submitAnswer(session, { preterite: 'x', pastParticiple: 'y' });
     expect(graded.correct).toBe(false);
     expect(s1.perfect).toBe(false);
@@ -169,7 +173,7 @@ describe('session', () => {
   });
 
   it('termine la session quand la file est épuisée', () => {
-    let session = createSession('indispensables', [be], { size: 1, now: T0 });
+    let session = createSession('training', [be], { size: 1, now: T0 });
     const r = submitAnswer(session, { preterite: 'was', pastParticiple: 'been' });
     session = r.session;
     expect(r.graded.correct).toBe(true);
@@ -178,7 +182,7 @@ describe('session', () => {
   });
 
   it('se termine dès que tous les verbes sont réussis (même après des fautes)', () => {
-    let session = createSession('indispensables', [be, go], { size: 2, now: T0 });
+    let session = createSession('training', [be, go], { size: 2, now: T0 });
     expect(session.totalUnique).toBe(2);
 
     // Faute sur « be » : réinséré, session pas finie, progression inchangée.
