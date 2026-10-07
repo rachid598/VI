@@ -64,8 +64,23 @@ describe('liste complète du manuel', () => {
 });
 
 describe('lot ouvert aux élèves', () => {
-  it('est exactement : cast · catch · choose · cling · come', () => {
-    expect(activeVerbs.map((v) => v.base)).toEqual(['cast', 'catch', 'choose', 'cling', 'come']);
+  it('est exactement : lot 1 (cast…come) + lot 2 (cost…dig), dans l’ordre du manuel', () => {
+    expect(activeVerbs.map((v) => v.base)).toEqual([
+      'cast', 'catch', 'choose', 'cling', 'come',
+      'cost', 'creep', 'cut', 'deal', 'dig',
+    ]);
+  });
+
+  it('transcrit fidèlement le lot 2 (photo : cost, creep, cut, deal, dig)', () => {
+    const row = (base: string) => {
+      const v = allVerbs.find((x) => x.base === base)!;
+      return [v.base, v.preterite, v.pastParticiple, v.translation];
+    };
+    expect(row('cost')).toEqual(['cost', 'cost', 'cost', 'coûter']);
+    expect(row('creep')).toEqual(['creep', 'crept', 'crept', 'ramper']);
+    expect(row('cut')).toEqual(['cut', 'cut', 'cut', 'couper']);
+    expect(row('deal')).toEqual(['deal', 'dealt', 'dealt', 'distribuer, négocier']);
+    expect(row('dig')).toEqual(['dig', 'dug', 'dug', 'creuser']);
   });
 
   it('ne contient aucun verbe inconnu (config ↔ liste cohérentes)', () => {

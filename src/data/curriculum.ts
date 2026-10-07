@@ -13,10 +13,17 @@ import { allVerbs, type VerbBase } from '@/data/verbs';
  *  Une faute de frappe est détectée à la compilation (le build échoue et le
  *  site en ligne reste inchangé).
  *
- *  Lot actuel : les 5 verbes de la photo (cast · catch · choose · cling · come).
+ *  Les lots s'ajoutent les uns aux autres : les élèves continuent de réviser
+ *  les anciens verbes (la répétition espacée les fait revenir quand il faut).
+ *  Pour ne garder que le dernier lot, supprime les lignes des lots précédents.
  * ============================================================================
  */
-export const ACTIVE_BASES: readonly VerbBase[] = ['cast', 'catch', 'choose', 'cling', 'come'];
+export const ACTIVE_BASES: readonly VerbBase[] = [
+  // Lot 1
+  'cast', 'catch', 'choose', 'cling', 'come',
+  // Lot 2
+  'cost', 'creep', 'cut', 'deal', 'dig',
+];
 
 /** Verbes ouverts aux élèves, dans l'ordre du manuel. */
 export const activeVerbs: Verb[] = allVerbs.filter((verb) =>

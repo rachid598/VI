@@ -14,13 +14,18 @@ pp. 160-161) est dans `src/data/verbs.ts`, dans l'ordre du manuel. Mais les
 endroit** : `src/data/curriculum.ts`.
 
 ```ts
-export const ACTIVE_BASES = ['cast', 'catch', 'choose', 'cling', 'come'];
+export const ACTIVE_BASES = [
+  'cast', 'catch', 'choose', 'cling', 'come', // lot 1
+  'cost', 'creep', 'cut', 'deal', 'dig',      // lot 2
+];
 ```
 
 Pour ouvrir de nouveaux verbes, ajoute leurs infinitifs à cette liste puis
 déploie : entraînement, révision mélangée, Boss Rush et badges suivent
-automatiquement. Une faute de frappe fait échouer le build (le site en ligne
-reste alors inchangé).
+automatiquement. Les lots s'additionnent (les élèves révisent aussi les
+anciens) ; pour ne garder que le dernier, supprime les lignes précédentes.
+Une faute de frappe fait échouer le build (le site en ligne reste alors
+inchangé).
 
 ## 🛠️ Stack technique
 
